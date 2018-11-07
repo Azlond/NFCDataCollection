@@ -1,0 +1,66 @@
+package com.sintho.nfcdatacollection;
+
+import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.os.Bundle;
+import android.os.Vibrator;
+
+import com.sintho.nfcdatacollection.db.DBContract;
+import com.sintho.nfcdatacollection.db.DBHelper;
+
+public class ReceiverActivity extends Activity
+{
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+
+        Intent startingIntent = getIntent();
+        Tag tag = startingIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        if (tag != null)
+        {
+            //Vibrate subtly to indicate tag scanned
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
+
+            DBHelper mDbHelper = new DBHelper(getApplicationContext());
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(DBContract.DBEntry.COLUMN_NFCID, bytesToHex(tag.getId()));
+
+            long newRowId = db.insert(DBContract.DBEntry.TABLE_NAME, null, values);
+            if (newRowId == -1) {
+                try {
+                    throw new Exception(String.format("row not inserted: %d", newRowId));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+           /* Intent forwardingIntent = new Intent(this, TransmitService.class);
+            forwardingIntent.putExtra(TransmitService.EXTRA_TAG_ID, tag.getId());
+            startService(forwardingIntent);*/
+        }
+
+       finish();
+    }
+    /**
+     * Snippet from Stack Overflow
+     * http://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+     */
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+}

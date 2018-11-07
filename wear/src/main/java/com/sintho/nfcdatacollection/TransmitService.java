@@ -1,0 +1,92 @@
+package com.sintho.nfcdatacollection;
+
+import android.app.IntentService;
+import android.content.Intent;
+import android.os.PowerManager;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class TransmitService extends IntentService
+{
+    public static final String EXTRA_TAG_ID = "TagId";
+    public static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
+
+    public TransmitService()
+    {
+        super("TransmitService");
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent)
+    {
+        PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
+        sendWakelock.acquire();
+
+        try {
+            byte[] tagID = intent.getByteArrayExtra(EXTRA_TAG_ID);
+
+            Log.d("WearTagRelay", "Got Tag, ID: " + Arrays.toString(tagID));
+
+            GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
+            googleApiClient.blockingConnect();
+
+            String connectedNode = getConnectedNodeID(googleApiClient);
+            if (connectedNode == null) {
+//                Toast.makeText(this, "Phone not connected.", Toast.LENGTH_LONG).show();
+                Log.d("WearTagRelay", "Phone not connected");
+                return;
+            }
+
+
+            MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, "FOUND_TAG", tagID).await();
+            if (!result.getStatus().isSuccess()) {
+//                Toast.makeText(this, "Could not transmit NFC: " + result.getStatus().getStatusMessage(), Toast.LENGTH_LONG).show();
+                Log.d("WearTagRelay", "Could not transmit NFC: " + result.getStatus().getStatusMessage());
+            }
+            Log.d("WearTagRelay", "Sent");
+
+        }
+        finally
+        {
+            sendWakelock.release();
+        }
+    }
+
+
+    private static @Nullable String getConnectedNodeID(GoogleApiClient googleApiClient)
+    {
+        List<Node> connectedNodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await().getNodes();
+        if (connectedNodes == null || connectedNodes.isEmpty())
+            return null;
+
+        //Sort to grab nearby node first
+        Collections.sort(connectedNodes, NodeNearbyComparator.INSTANCE);
+        Log.d(TransmitService.class.getName(), "Number of connected Nodes: " + connectedNodes.size());
+
+        return connectedNodes.get(0).getId();
+    }
+
+    private static class NodeNearbyComparator implements Comparator<Node>
+    {
+        public static final NodeNearbyComparator INSTANCE = new NodeNearbyComparator();
+
+        @Override
+        public int compare(Node a, Node b)
+        {
+            int nearbyA = a.isNearby() ? 1 : 0;
+            int nearbyB = b.isNearby() ? 1 : 0;
+            return nearbyB - nearbyA;
+        }
+    }
+}
