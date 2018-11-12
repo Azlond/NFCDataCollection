@@ -12,16 +12,20 @@ import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TransmitService extends IntentService
-{
-    public static final String EXTRA_TAG_ID = "TagId";
+public class TransmitService extends IntentService {
+    private static final String TAG = TransmitService.class.getName();
+    public static final String TAGUID = "TagId";
     public static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
-
+    public static final String REGISTER = "Registering";
+    public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
     public TransmitService()
     {
         super("TransmitService");
@@ -32,30 +36,52 @@ public class TransmitService extends IntentService
     {
         PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
         sendWakelock.acquire();
-
         try {
-            byte[] tagID = intent.getByteArrayExtra(EXTRA_TAG_ID);
+            String tagID = intent.getStringExtra(TAGUID);
+            if (intent.hasExtra(REGISTER)) {
+                Log.d(TAG, "registering");
+                MainActivity.registering = false;
 
-            Log.d("WearTagRelay", "Got Tag, ID: " + Arrays.toString(tagID));
+                GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
+                googleApiClient.blockingConnect();
 
-            GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
-            googleApiClient.blockingConnect();
-
-            String connectedNode = getConnectedNodeID(googleApiClient);
-            if (connectedNode == null) {
+                String connectedNode = getConnectedNodeID(googleApiClient);
+                if (connectedNode == null) {
 //                Toast.makeText(this, "Phone not connected.", Toast.LENGTH_LONG).show();
-                Log.d("WearTagRelay", "Phone not connected");
-                return;
-            }
+                    Log.d(TAG, "Phone not connected");
+                    return;
+                }
 
-
-            MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, "FOUND_TAG", tagID).await();
-            if (!result.getStatus().isSuccess()) {
+                byte[] tagBytes = intent.getByteArrayExtra(JSONBYTEARRAY);
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, REGISTER, tagBytes).await();
+                if (!result.getStatus().isSuccess()) {
 //                Toast.makeText(this, "Could not transmit NFC: " + result.getStatus().getStatusMessage(), Toast.LENGTH_LONG).show();
-                Log.d("WearTagRelay", "Could not transmit NFC: " + result.getStatus().getStatusMessage());
-            }
-            Log.d("WearTagRelay", "Sent");
+                    Log.d(TAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
+                }
+                Log.d(TAG, "Sent register message");
+            } else {
 
+                Log.d(TAG, "Got Tag, ID: " + tagID);
+
+                GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
+                googleApiClient.blockingConnect();
+
+                String connectedNode = getConnectedNodeID(googleApiClient);
+                if (connectedNode == null) {
+//                Toast.makeText(this, "Phone not connected.", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Phone not connected");
+                    return;
+                }
+
+                byte[] jsonBytes = intent.getByteArrayExtra(JSONBYTEARRAY);
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, "FOUND_TAG", jsonBytes).await();
+                if (!result.getStatus().isSuccess()) {
+//                Toast.makeText(this, "Could not transmit NFC: " + result.getStatus().getStatusMessage(), Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
+                }
+                Log.d(TAG, "Sent");
+
+            }
         }
         finally
         {

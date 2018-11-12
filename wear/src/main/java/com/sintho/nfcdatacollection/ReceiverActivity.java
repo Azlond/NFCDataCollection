@@ -3,6 +3,8 @@ package com.sintho.nfcdatacollection;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -11,6 +13,9 @@ import android.os.Vibrator;
 
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ReceiverActivity extends Activity
 {
@@ -23,28 +28,63 @@ public class ReceiverActivity extends Activity
 
         Intent startingIntent = getIntent();
         Tag tag = startingIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        if (tag != null)
-        {
+        String tagUID = bytesToHex(tag.getId());
+        if (tag != null) {
             //Vibrate subtly to indicate tag scanned
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
 
-            DBHelper mDbHelper = new DBHelper(getApplicationContext());
-            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            if (MainActivity.registering) {
+                /*Intent forwardingIntent = new Intent(this, TransmitService.class);
+                forwardingIntent.putExtra(TransmitService.REGISTER, true);
+                forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, tag.getId());
+                forwardingIntent.putExtra(TransmitService.TAGUID, tagUID);
+                startService(forwardingIntent);*/
+            } else {
+                DBHelper mDbHelper = new DBHelper(getApplicationContext());
+                SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-            ContentValues values = new ContentValues();
-            values.put(DBContract.DBEntry.COLUMN_NFCID, bytesToHex(tag.getId()));
+                ContentValues values = new ContentValues();
+                values.put(DBContract.DBEntry.COLUMN_NFCID, tagUID);
 
-            long newRowId = db.insert(DBContract.DBEntry.TABLE_NAME, null, values);
-            if (newRowId == -1) {
+                long newRowId = db.insert(DBContract.DBEntry.TABLE_NAME, null, values);
+                if (newRowId == -1) {
+                    try {
+                        throw new Exception(String.format("row not inserted: %d", newRowId));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                String sortOrder =
+                        DBContract.DBEntry._ID+ " DESC";
+                Cursor cursor = db.query(
+                        DBContract.DBEntry.TABLE_NAME,   // The table to query
+                        null,             // The array of columns to return (pass null to get all)
+                        DBContract.DBEntry._ID + " = " + newRowId,              // The columns for the WHERE clause
+                        null,          // The values for the WHERE clause
+                        null,                   // don't group the rows
+                        null,                   // don't filter by row groups
+                        sortOrder               // The sort order
+                );
+
+                JSONObject json = new JSONObject();
                 try {
-                    throw new Exception(String.format("row not inserted: %d", newRowId));
-                } catch (Exception e) {
+                    json.put("id", newRowId);
+
+                    while(cursor.moveToNext()) {
+                        String date = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_DATE));
+                        json.put("date", date);
+                        String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
+                        json.put("nfcid", id);
+                    }
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+                Intent forwardingIntent = new Intent(this, TransmitService.class);
+                forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
+                startService(forwardingIntent);
             }
-           /* Intent forwardingIntent = new Intent(this, TransmitService.class);
-            forwardingIntent.putExtra(TransmitService.EXTRA_TAG_ID, tag.getId());
-            startService(forwardingIntent);*/
         }
 
        finish();

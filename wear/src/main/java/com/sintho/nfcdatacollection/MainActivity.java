@@ -20,14 +20,16 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
+    public static boolean registering = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         final DBHelper mDbHelper = new DBHelper(getApplicationContext());
-        Button button = (Button) findViewById(R.id.dbButton);
-        button.setOnClickListener(new View.OnClickListener() {
+        Button dbLogButton = (Button) findViewById(R.id.dbButton);
+        dbLogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 SQLiteDatabase db = mDbHelper.getReadableDatabase();
@@ -63,8 +65,18 @@ public class MainActivity extends Activity {
                 for (int i = 0; i < itemIds.size(); i++) {
                     Log.d(MainActivity.class.getName(), MessageFormat.format("DB-ID: {0}; Date: {1}; NFC-ID: {2}", itemIds.get(i), dates.get(i), nfcIds.get(i)));
                 }
-
             }
         });
-    }
+        final Button registerButton = (Button) findViewById(R.id.dbButton);
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!registering) {
+                    Log.d("MAIN", "register clicked");
+                    registering = true;
+                    registerButton.setEnabled(false);
+                }
+            }
+        });
+}
 }

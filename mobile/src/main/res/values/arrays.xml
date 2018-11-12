@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="nav_names">
+        <item>Log</item>
+        <item>Register</item>
+        <item>Contact</item>
+        <item>fourth</item>
+        <item>fifth</item>
+    </array>
+</resources>
