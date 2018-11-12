@@ -21,6 +21,7 @@
     <string name="date">Date</string>
     <string name="name">Name</string>
     <string name="id">ID</string>
+    <string name="save">Save</string>
     <string name="tableValueMissingID">The ID of the Tag will be displayed here</string>
     <string name="tableValueMissingName">The name of the Tag will be displayed here</string>
     <string name="tableValueMissingDate">The date of the Tag will be displayed here</string>

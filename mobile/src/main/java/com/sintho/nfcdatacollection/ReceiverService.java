@@ -10,6 +10,8 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.sintho.nfcdatacollection.db.DBLogContract;
 import com.sintho.nfcdatacollection.db.DBLogHelper;
+import com.sintho.nfcdatacollection.db.DBRegisterContract;
+import com.sintho.nfcdatacollection.db.DBRegisterHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,12 +79,44 @@ public class ReceiverService extends WearableListenerService {
                     e.printStackTrace();
                 }
             }
-            Log.d(LOGTAG, "Successfully added new entry to database");
+            Log.d(LOGTAG, "Successfully added new entry to log database");
             Log.d(LOGTAG, String.format("Broadcasting %s to update NFC-Log fragment UI", NFCTAGCAST));
             Intent broadcastIntent = new Intent(NFCTAGCAST);
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
         } else if (messageEvent.getPath().equals(TAGREGISTER)) {
-//            Log.d(TAG, "register message");
+            Log.d(LOGTAG, "message event" + TAGREGISTER);
+
+            byte[] jsonBytes = messageEvent.getData();
+            String nfcID = null;
+            try {
+                //decode byte array to string
+                String decoded = new String(jsonBytes, "UTF-8");
+                //parse string to json
+                JSONObject json = new JSONObject(decoded);
+                //get values from json
+                nfcID = (String) json.get(NFCIDSTRING);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.d(LOGTAG, String.format("gotTag: %s", nfcID));
+
+            DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
+            SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
+            values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
+
+            long newRowId = db.insert(DBRegisterContract.DBRegisterEntry.TABLE_NAME, null, values);
+            if (newRowId == -1) {
+                try {
+                    throw new Exception(String.format("row not inserted: %d", newRowId));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 //            Intent intent = new Intent(this, RegisterTagActivity.class);
 //            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //            byte[] tagId = messageEvent.getData();

@@ -13,5 +13,6 @@ public final class DBContract {
         public static final String TABLE_NAME = "dataset";
         public static final String COLUMN_DATE = "date";
         public static final String COLUMN_NFCID = "nfcid";
+        public static final String COLUMN_SYNCED = "synced";
     }
 }

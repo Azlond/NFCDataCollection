@@ -2,10 +2,10 @@ package com.sintho.nfcdatacollection.db;
 
 import android.provider.BaseColumns;
 
-public final class DBRegistrContract {
+public final class DBRegisterContract {
     // To prevent someone from accidentally instantiating the contract class,
     // make the constructor private.
-    private DBRegistrContract() {
+    private DBRegisterContract() {
     }
 
     /* Inner class that defines the table contents */

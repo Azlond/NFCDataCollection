@@ -10,9 +10,9 @@ public class DBRegisterHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "NFCNames.db";
 
     private static final String SQL_CREATE_DB =
-            "CREATE TABLE IF NOT EXISTS " + DBLogContract.DBLogEntry.TABLE_NAME + " (" +
-                    DBLogContract.DBLogEntry.COLUMN_NFCID + " TEXT PRIMARY KEY," +
-                    DBLogContract.DBLogEntry.COLUMN_NAME + " TEXT)";
+            "CREATE TABLE IF NOT EXISTS " + DBRegisterContract.DBRegisterEntry.TABLE_NAME + " (" +
+                    DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " TEXT PRIMARY KEY," +
+                    DBRegisterContract.DBRegisterEntry.COLUMN_NAME + " TEXT)";
 
     public DBRegisterHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

@@ -17,9 +17,10 @@ import com.sintho.nfcdatacollection.db.DBHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ReceiverActivity extends Activity
-{
-
+public class ReceiverActivity extends Activity {
+    public static final String IDSTRING = "id";
+    public static final String DATESTRING = "date";
+    public static final String NFCIDSTRING = "nfcid";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -34,11 +35,16 @@ public class ReceiverActivity extends Activity
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
 
             if (MainActivity.registering) {
-                /*Intent forwardingIntent = new Intent(this, TransmitService.class);
+                Intent forwardingIntent = new Intent(this, TransmitService.class);
                 forwardingIntent.putExtra(TransmitService.REGISTER, true);
-                forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, tag.getId());
-                forwardingIntent.putExtra(TransmitService.TAGUID, tagUID);
-                startService(forwardingIntent);*/
+                JSONObject json = new JSONObject();
+                try {
+                    json.put(NFCIDSTRING, tagUID);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
+                startService(forwardingIntent);
             } else {
                 DBHelper mDbHelper = new DBHelper(getApplicationContext());
                 SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -69,13 +75,13 @@ public class ReceiverActivity extends Activity
 
                 JSONObject json = new JSONObject();
                 try {
-                    json.put("id", newRowId);
+                    json.put(IDSTRING, newRowId);
 
                     while(cursor.moveToNext()) {
                         String date = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_DATE));
-                        json.put("date", date);
+                        json.put(DATESTRING, date);
                         String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
-                        json.put("nfcid", id);
+                        json.put(NFCIDSTRING, id);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

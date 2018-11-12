@@ -13,7 +13,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "CREATE TABLE IF NOT EXISTS " + DBContract.DBEntry.TABLE_NAME + " (" +
                     DBContract.DBEntry._ID + " INTEGER PRIMARY KEY," +
                     DBContract.DBEntry.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                    DBContract.DBEntry.COLUMN_NFCID + " TEXT)";
+                    DBContract.DBEntry.COLUMN_NFCID + " TEXT," +
+                    DBContract.DBEntry.COLUMN_SYNCED + " INTEGER DEFAULT 0)";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
