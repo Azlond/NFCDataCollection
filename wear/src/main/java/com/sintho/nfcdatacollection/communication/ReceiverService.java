@@ -17,8 +17,10 @@ import java.io.UnsupportedEncodingException;
 import static com.sintho.nfcdatacollection.communication.ReceiverActivity.IDSTRING;
 
 public class ReceiverService extends WearableListenerService {
-    public static final String LOGTAG = ReceiverService.class.getName();
-    public static final String RECEIVED = "RECEIVED";
+    private static final String LOGTAG = ReceiverService.class.getName();
+
+    //for communication with phone
+    private static final String RECEIVED = "RECEIVED";
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
@@ -28,8 +30,6 @@ public class ReceiverService extends WearableListenerService {
             //get byte data from message
             byte[] jsonBytes = messageEvent.getData();
             int id = -1;
-            String date = null;
-            String nfcID = null;
             try {
                 //decode byte array to string
                 String decoded = new String(jsonBytes, "UTF-8");
@@ -37,9 +37,7 @@ public class ReceiverService extends WearableListenerService {
                 JSONObject json = new JSONObject(decoded);
                 //get values from json
                 id = (Integer) json.get(IDSTRING);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
+            } catch (UnsupportedEncodingException | JSONException e) {
                 e.printStackTrace();
             }
             if (id == -1) {

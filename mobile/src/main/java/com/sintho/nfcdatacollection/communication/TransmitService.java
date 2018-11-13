@@ -17,8 +17,8 @@ import java.util.List;
 
 public class TransmitService extends IntentService {
     private static final String LOGTAG = TransmitService.class.getName();
-    public static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
-    public static final String RECEIVED = "RECEIVED";
+    private static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
+    private static final String RECEIVED = "RECEIVED";
     public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
     public TransmitService()
     {
@@ -28,7 +28,7 @@ public class TransmitService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(LOGTAG, "onHandleIntent TransmitService");
-        PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
+        @SuppressWarnings("ConstantConditions") PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
         sendWakelock.acquire(60*1000L /*1 minute*/);
         try {
                 GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
@@ -65,7 +65,7 @@ public class TransmitService extends IntentService {
     }
 
     private static class NodeNearbyComparator implements Comparator<Node> {
-        public static final NodeNearbyComparator INSTANCE = new NodeNearbyComparator();
+        private static final NodeNearbyComparator INSTANCE = new NodeNearbyComparator();
 
         @Override
         public int compare(Node a, Node b)

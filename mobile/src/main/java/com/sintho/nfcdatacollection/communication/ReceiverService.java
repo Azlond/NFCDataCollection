@@ -27,14 +27,16 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 public class ReceiverService extends WearableListenerService {
-    public static final String LOGTAG = ReceiverService.class.getName();
+    private static final String LOGTAG = ReceiverService.class.getName();
     public static final String NFCTAGCAST = ReceiverService.class.getName() + "NFCBroadcast";
-    public static final String IDSTRING = "id";
-    public static final String DATESTRING = "date";
-    public static final String NFCIDSTRING = "nfcid";
-    public static final String TAGFOUND = "FOUND_TAG";
-    public static final String TAGREGISTER = "REGISTER";
     public static final String FRAGREGISTER = "FRAGMENTREGISTER";
+
+    //for communication with watch
+    private static final String IDSTRING = "id";
+    private static final String DATESTRING = "date";
+    private static final String NFCIDSTRING = "nfcid";
+    private static final String TAGFOUND = "FOUND_TAG";
+    private static final String REGISTER = "REGISTER";
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
@@ -148,8 +150,8 @@ public class ReceiverService extends WearableListenerService {
             watchIntent.putExtra(TransmitService.JSONBYTEARRAY, jsonObject.toString().getBytes());
             startService(watchIntent);
             Log.d(LOGTAG, "Confirmation message sent");
-        } else if (messageEvent.getPath().equals(TAGREGISTER)) {
-            Log.d(LOGTAG, "message event" + TAGREGISTER);
+        } else if (messageEvent.getPath().equals(REGISTER)) {
+            Log.d(LOGTAG, "message event" + REGISTER);
 
             byte[] jsonBytes = messageEvent.getData();
             String nfcID = null;
@@ -211,7 +213,7 @@ public class ReceiverService extends WearableListenerService {
         }
     }
 
-    public void showNotification(Context context, String nfcID, String name) {
+    private void showNotification(Context context, String nfcID, String name) {
         Intent intent = new Intent(context, Navigation.class);
         PendingIntent pi = PendingIntent.getActivity(context, 5000, intent, 0);
         String message = String.format("ID %s has already been registered with name %s", nfcID, name);
@@ -224,6 +226,8 @@ public class ReceiverService extends WearableListenerService {
         mBuilder.setDefaults(Notification.DEFAULT_SOUND);
         mBuilder.setAutoCancel(true);
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(5000, mBuilder.build());
+        if (mNotificationManager != null) {
+            mNotificationManager.notify(5000, mBuilder.build());
+        }
     }
 }

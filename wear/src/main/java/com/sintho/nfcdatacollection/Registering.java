@@ -9,8 +9,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.sintho.nfcdatacollection.communication.ReceiverService;
-
 public class Registering extends Activity {
     private static final String LOGTAG = Registering.class.getName();
     public static boolean registering = false;

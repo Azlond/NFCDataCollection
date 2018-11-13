@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Registering"
+            android:text="@string/registering"
             android:textAlignment="center"
             android:textSize="30sp" />
     </LinearLayout>

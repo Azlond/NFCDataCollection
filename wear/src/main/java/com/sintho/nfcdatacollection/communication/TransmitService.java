@@ -11,7 +11,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
-import com.sintho.nfcdatacollection.MainActivity;
 import com.sintho.nfcdatacollection.Registering;
 
 import java.util.Collections;
@@ -20,19 +19,21 @@ import java.util.List;
 
 public class TransmitService extends IntentService {
     private static final String LOGTAG = TransmitService.class.getName();
-    public static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
+    private static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
+    private static final String TAGFOUND = "FOUND_TAG";
+
     public static final String REGISTER = "REGISTER";
     public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
+
     public TransmitService()
     {
         super("TransmitService");
     }
 
     @Override
-    protected void onHandleIntent(Intent intent)
-    {
-        PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
-        sendWakelock.acquire();
+    protected void onHandleIntent(Intent intent) {
+        @SuppressWarnings("ConstantConditions") PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
+        sendWakelock.acquire(1000*60);
         try {
             if (intent.hasExtra(REGISTER)) {
                 Log.d(LOGTAG, REGISTER);
@@ -65,7 +66,7 @@ public class TransmitService extends IntentService {
                     return;
                 }
 
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, "FOUND_TAG", intent.getByteArrayExtra(JSONBYTEARRAY)).await();
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, TAGFOUND, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
                 if (!result.getStatus().isSuccess()) {
                     Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
                 }
@@ -90,7 +91,7 @@ public class TransmitService extends IntentService {
     }
 
     private static class NodeNearbyComparator implements Comparator<Node> {
-        public static final NodeNearbyComparator INSTANCE = new NodeNearbyComparator();
+        private static final NodeNearbyComparator INSTANCE = new NodeNearbyComparator();
 
         @Override
         public int compare(Node a, Node b)

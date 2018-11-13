@@ -11,7 +11,7 @@ import android.util.Log;
 import com.sintho.nfcdatacollection.communication.Sync;
 
 public class autostart extends BroadcastReceiver {
-    public static final int REQUESTCODE = 1337;
+    private static final int REQUESTCODE = 1337;
     private static final String LOGTAG = autostart.class.getName();
 
     public void onReceive(Context context, Intent intent) {
@@ -19,8 +19,10 @@ public class autostart extends BroadcastReceiver {
         Intent i = new Intent(context, Sync.class);
         PendingIntent alarmIntent = PendingIntent.getService(context, REQUESTCODE, i, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        if (alarmManager != null) {
+            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime(),
                 AlarmManager.INTERVAL_HOUR, alarmIntent);
+        }
     }
 }

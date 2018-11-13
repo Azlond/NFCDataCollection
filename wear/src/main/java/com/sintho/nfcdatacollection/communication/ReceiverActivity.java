@@ -10,7 +10,6 @@ import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Vibrator;
 
-import com.sintho.nfcdatacollection.MainActivity;
 import com.sintho.nfcdatacollection.Registering;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
@@ -31,8 +30,10 @@ public class ReceiverActivity extends Activity {
         Intent startingIntent = getIntent();
         Tag tag = startingIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         String tagUID = bytesToHex(tag.getId());
+        // noinspection ConstantConditions
         if (tag != null) {
             //Vibrate subtly to indicate tag scanned
+            //noinspection ConstantConditions
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
 
             if (Registering.registering) {
@@ -101,8 +102,8 @@ public class ReceiverActivity extends Activity {
      * Snippet from Stack Overflow
      * http://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
      */
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
+    final private static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {
             int v = bytes[j] & 0xFF;

@@ -1,28 +1,19 @@
 package com.sintho.nfcdatacollection.communication;
 
-import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 
-import com.sintho.nfcdatacollection.MainActivity;
-import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,9 +58,9 @@ public class Sync extends IntentService {
         );
 
 
-        List itemIds = new ArrayList<>();
-        List dates = new ArrayList<>();
-        List nfcIds = new ArrayList<>();
+        List<Long> itemIds = new ArrayList<>();
+        List<String> dates = new ArrayList<>();
+        List<String> nfcIds = new ArrayList<>();
         while(cursor.moveToNext()) {
             long itemId = cursor.getLong(
                     cursor.getColumnIndexOrThrow(DBContract.DBEntry._ID));
@@ -95,10 +86,5 @@ public class Sync extends IntentService {
             startService(forwardingIntent);
             Log.d(LOGTAG, "Sent synced item");
         }
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
     }
 }

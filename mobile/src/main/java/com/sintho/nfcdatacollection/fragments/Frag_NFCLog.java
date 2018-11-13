@@ -37,7 +37,7 @@ import java.util.List;
  * Fragment that displays the logged nfc-events
  */
 public class Frag_NFCLog extends Fragment {
-    BroadcastReceiver receiver;
+    private BroadcastReceiver receiver;
     private static final String LOGTAG = Frag_NFCLog.class.getName();
 
 
@@ -221,15 +221,5 @@ public class Frag_NFCLog extends Fragment {
             tl.addView(tr);
         }
         return tl;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
     }
 }

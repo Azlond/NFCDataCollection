@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">NFCDataCollection</string>
-    <string name="hello_round">Hello Round World!</string>
-    <string name="hello_square">Hello Square World!</string>
+    <string name="register_tag">Register Tag</string>
+    <string name="registering">Registration started</string>
 </resources>

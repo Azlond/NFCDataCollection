@@ -18,7 +18,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.sintho.nfcdatacollection.communication.ReceiverService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
@@ -26,7 +25,7 @@ import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 
 public class Navigation extends AppCompatActivity {
-
+    //TODO: replace icons in drawer
     private static final String LOGTAG = Navigation.class.getName();
     /**
      * Navigation tab names
@@ -36,8 +35,8 @@ public class Navigation extends AppCompatActivity {
     private static final String TAG_CONTACT = "contact";
 
     // index to identify current nav menu item
-    public static int navItemIndex = 0;
-    public static String CURRENT_TAG = TAG_LOG;
+    private static int navItemIndex = 0;
+    private static String CURRENT_TAG = TAG_LOG;
 
     private Handler mHandler;
     private DrawerLayout drawer;
@@ -79,7 +78,7 @@ public class Navigation extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.d(LOGTAG, "received message to switch fragments");
-                if (CURRENT_TAG == TAG_REGISTER) {
+                if (CURRENT_TAG.equals(TAG_REGISTER)) {
                     return;
                 }
                 CURRENT_TAG = TAG_REGISTER;
@@ -121,11 +120,6 @@ public class Navigation extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.navigation, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
     }
 
     /***
@@ -190,6 +184,7 @@ public class Navigation extends AppCompatActivity {
         navigationView.getMenu().getItem(navItemIndex).setChecked(true);
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void setToolbarTitle() {
         getSupportActionBar().setTitle(activityTitles[navItemIndex]);
     }
@@ -236,20 +231,7 @@ public class Navigation extends AppCompatActivity {
         });
 
 
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.openDrawer, R.string.closeDrawer) {
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
-                super.onDrawerClosed(drawerView);
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
-                super.onDrawerOpened(drawerView);
-            }
-        };
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.openDrawer, R.string.closeDrawer) {};
 
         //calling sync state is necessary or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
