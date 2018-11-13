@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Vibrator;
 
 import com.sintho.nfcdatacollection.MainActivity;
+import com.sintho.nfcdatacollection.Registering;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
 
@@ -34,7 +35,7 @@ public class ReceiverActivity extends Activity {
             //Vibrate subtly to indicate tag scanned
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
 
-            if (MainActivity.registering) {
+            if (Registering.registering) {
                 Intent forwardingIntent = new Intent(this, TransmitService.class);
                 forwardingIntent.putExtra(TransmitService.REGISTER, true);
                 JSONObject json = new JSONObject();

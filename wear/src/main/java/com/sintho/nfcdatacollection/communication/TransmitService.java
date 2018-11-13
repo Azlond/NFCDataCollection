@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -11,6 +12,7 @@ import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 import com.sintho.nfcdatacollection.MainActivity;
+import com.sintho.nfcdatacollection.Registering;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,7 +36,10 @@ public class TransmitService extends IntentService {
         try {
             if (intent.hasExtra(REGISTER)) {
                 Log.d(LOGTAG, REGISTER);
-                MainActivity.registering = false;
+
+                //Notify activity that registering is complete
+                Intent broadcastIntent = new Intent(Registering.ONFINISH);
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
 
                 GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
                 googleApiClient.blockingConnect();
