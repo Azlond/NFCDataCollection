@@ -27,6 +27,7 @@ import android.widget.FrameLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.db.DBLogContract;
@@ -151,6 +152,7 @@ public class Frag_NFCRegister extends Fragment {
                 ContentValues nameValue = new ContentValues();
                 nameValue.put(DBLogContract.DBLogEntry.COLUMN_NAME, String.valueOf(name.getText()));
                 logDB.update(DBLogContract.DBLogEntry.TABLE_NAME, nameValue, DBLogContract.DBLogEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
+                Toast.makeText(getActivity(), R.string.savedNewName, Toast.LENGTH_LONG).show();
             }
         });
         return button;
