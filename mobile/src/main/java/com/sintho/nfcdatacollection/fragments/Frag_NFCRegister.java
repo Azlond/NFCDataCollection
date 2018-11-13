@@ -24,6 +24,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -61,7 +62,9 @@ public class Frag_NFCRegister extends Fragment {
         FrameLayout frameLayout = (FrameLayout) inflater.inflate(R.layout.fragment_frag__nfcregister, container, false);
         TableLayout tableLayout = fillRegister();
         frameLayout.removeAllViewsInLayout();
-        frameLayout.addView(tableLayout);
+        ScrollView scrollView = new ScrollView(getContext());
+        scrollView.addView(tableLayout);
+        frameLayout.addView(scrollView);
         return frameLayout;
     }
     /**

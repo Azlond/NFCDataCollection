@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -70,7 +71,9 @@ public class Frag_NFCLog extends Fragment {
                 }
                 TableLayout tableLayout = fillLog();
                 frameLayout.removeAllViewsInLayout();
-                frameLayout.addView(tableLayout);
+                ScrollView scrollView = new ScrollView(getContext());
+                scrollView.addView(tableLayout);
+                frameLayout.addView(scrollView);
             }
         };
 
@@ -90,7 +93,9 @@ public class Frag_NFCLog extends Fragment {
         // Add the database logs to tableLayout, add tableLayout to fragment
         TableLayout tableLayout = fillLog();
         frameLayout.removeAllViewsInLayout();
-        frameLayout.addView(tableLayout);
+        ScrollView scrollView = new ScrollView(getContext());
+        scrollView.addView(tableLayout);
+        frameLayout.addView(scrollView);
         return frameLayout;
     }
 
