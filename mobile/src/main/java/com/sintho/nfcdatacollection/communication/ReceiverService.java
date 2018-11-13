@@ -1,14 +1,21 @@
 package com.sintho.nfcdatacollection.communication;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
+import com.sintho.nfcdatacollection.Navigation;
+import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.db.DBLogContract;
 import com.sintho.nfcdatacollection.db.DBLogHelper;
 import com.sintho.nfcdatacollection.db.DBRegisterContract;
@@ -80,6 +87,7 @@ public class ReceiverService extends WearableListenerService {
             );
 
             if (cursor.getCount() == 0) {
+                cursor.close();
                 Log.d(LOGTAG, "new entry for db");
                 ContentValues values = new ContentValues();
                 values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
@@ -106,7 +114,7 @@ public class ReceiverService extends WearableListenerService {
                 } else {
                     values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
                 }
-
+                cursor.close();
                 values.put(DBLogContract.DBLogEntry.COLUMN_DATE, date);
                 values.put(DBLogContract.DBLogEntry.COLUMN_ID, id);
 
@@ -122,6 +130,9 @@ public class ReceiverService extends WearableListenerService {
                 Log.d(LOGTAG, String.format("Broadcasting %s to update NFC-Log fragment UI", NFCTAGCAST));
                 Intent broadcastIntent = new Intent(NFCTAGCAST);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
+            } else {
+                Log.d(LOGTAG, "Already received row with id: " + id);
+                cursor.close();
             }
             /*
              * confirm to watch that row #id has been received
@@ -173,9 +184,13 @@ public class ReceiverService extends WearableListenerService {
             );
             if (cursor.getCount() > 0) {
                 //tag has already been registered
+                cursor.moveToFirst();
                 Log.d(LOGTAG, String.format("Tag %s has already been registered", nfcID));
-                //TODO: send notification to user that tag has been registered
+                showNotification(getApplicationContext(), nfcID, cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME)));
+                cursor.close();
                 return;
+            } else {
+                cursor.close();
             }
             SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
 
@@ -194,5 +209,21 @@ public class ReceiverService extends WearableListenerService {
             Intent broadcastIntent = new Intent(FRAGREGISTER);
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
         }
+    }
+
+    public void showNotification(Context context, String nfcID, String name) {
+        Intent intent = new Intent(context, Navigation.class);
+        PendingIntent pi = PendingIntent.getActivity(context, 5000, intent, 0);
+        String message = String.format("ID %s has already been registered with name %s", nfcID, name);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.cast_ic_notification_0)
+                .setContentTitle(getString(R.string.app_name))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setContentText(message);
+        mBuilder.setContentIntent(pi);
+        mBuilder.setDefaults(Notification.DEFAULT_SOUND);
+        mBuilder.setAutoCancel(true);
+        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(5000, mBuilder.build());
     }
 }

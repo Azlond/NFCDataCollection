@@ -83,6 +83,7 @@ public class ReceiverActivity extends Activity {
                         String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
                         json.put(NFCIDSTRING, id);
                     }
+                    cursor.close();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
