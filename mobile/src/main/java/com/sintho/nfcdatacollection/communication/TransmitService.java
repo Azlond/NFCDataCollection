@@ -1,4 +1,4 @@
-package com.sintho.nfcdatacollection;
+package com.sintho.nfcdatacollection.communication;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -17,9 +17,8 @@ import java.util.List;
 
 public class TransmitService extends IntentService {
     private static final String LOGTAG = TransmitService.class.getName();
-    public static final String TAGUID = "TagId";
     public static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
-    public static final String REGISTER = "REGISTER";
+    public static final String RECEIVED = "RECEIVED";
     public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
     public TransmitService()
     {
@@ -27,16 +26,11 @@ public class TransmitService extends IntentService {
     }
 
     @Override
-    protected void onHandleIntent(Intent intent)
-    {
+    protected void onHandleIntent(Intent intent) {
+        Log.d(LOGTAG, "onHandleIntent TransmitService");
         PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
-        sendWakelock.acquire();
+        sendWakelock.acquire(60*1000L /*1 minute*/);
         try {
-            String tagID = intent.getStringExtra(TAGUID);
-            if (intent.hasExtra(REGISTER)) {
-                Log.d(LOGTAG, REGISTER);
-                MainActivity.registering = false;
-
                 GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
                 googleApiClient.blockingConnect();
 
@@ -46,30 +40,13 @@ public class TransmitService extends IntentService {
                     return;
                 }
 
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, REGISTER, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
-                if (!result.getStatus().isSuccess()) {
-                    Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
-                }
-                Log.d(LOGTAG, "Sent register message");
-            } else {
-                Log.d(LOGTAG, "Got Tag, ID: " + tagID);
-
-                GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
-                googleApiClient.blockingConnect();
-
-                String connectedNode = getConnectedNodeID(googleApiClient);
-                if (connectedNode == null) {
-                    Log.d(LOGTAG, "Phone not connected");
-                    return;
-                }
-
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, "FOUND_TAG", intent.getByteArrayExtra(JSONBYTEARRAY)).await();
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, RECEIVED, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
                 if (!result.getStatus().isSuccess()) {
                     Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
                 }
                 Log.d(LOGTAG, "Sent");
-            }
         } finally {
+            Log.d(LOGTAG, "Releasing wakelock");
             sendWakelock.release();
         }
     }

@@ -1,25 +1,33 @@
 package com.sintho.nfcdatacollection;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.sintho.nfcdatacollection.communication.ReceiverService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 
 public class Navigation extends AppCompatActivity {
 
+    private static final String LOGTAG = Navigation.class.getName();
     /**
      * Navigation tab names
      */
@@ -38,6 +46,7 @@ public class Navigation extends AppCompatActivity {
 
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
+    private BroadcastReceiver receiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,6 +75,35 @@ public class Navigation extends AppCompatActivity {
             loadHomeFragment();
         }
 
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(LOGTAG, "received message to switch fragments");
+                if (CURRENT_TAG == TAG_REGISTER) {
+                    return;
+                }
+                CURRENT_TAG = TAG_REGISTER;
+                navItemIndex = 1;
+                loadHomeFragment();
+            }
+        };
+
+        //register receiver
+        Log.d(LOGTAG, "registering broadcast-receiver");
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                receiver, new IntentFilter(ReceiverService.FRAGREGISTER)
+        );
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //remove registered listener, we no longer need updates if the fragment is not visible
+        if (receiver != null) {
+            Log.d(LOGTAG, "unregistering broadcast-receiver");
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+            receiver = null;
+        }
     }
 
     @Override

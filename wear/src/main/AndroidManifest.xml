@@ -7,13 +7,14 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault">
-        <activity android:name=".ReceiverActivity">
+        <activity android:name=".communication.ReceiverActivity">
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
@@ -27,7 +28,12 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".TransmitService" />
+        <service android:name=".communication.TransmitService" />
+        <service android:name=".communication.ReceiverService">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -36,6 +42,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".communication.autostart"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.sintho.nfcdatacollection.SYNC_SERVICE" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".communication.Sync"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

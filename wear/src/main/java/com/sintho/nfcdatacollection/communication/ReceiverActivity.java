@@ -1,16 +1,16 @@
-package com.sintho.nfcdatacollection;
+package com.sintho.nfcdatacollection.communication;
 
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Vibrator;
 
+import com.sintho.nfcdatacollection.MainActivity;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
 
@@ -66,8 +66,8 @@ public class ReceiverActivity extends Activity {
                 Cursor cursor = db.query(
                         DBContract.DBEntry.TABLE_NAME,   // The table to query
                         null,             // The array of columns to return (pass null to get all)
-                        DBContract.DBEntry._ID + " = " + newRowId,              // The columns for the WHERE clause
-                        null,          // The values for the WHERE clause
+                        DBContract.DBEntry._ID + " = ?",              // The columns for the WHERE clause
+                        new String[] {String.valueOf(newRowId)},          // The values for the WHERE clause
                         null,                   // don't group the rows
                         null,                   // don't filter by row groups
                         sortOrder               // The sort order

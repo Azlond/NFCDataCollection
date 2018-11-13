@@ -25,7 +25,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.sintho.nfcdatacollection.R;
-import com.sintho.nfcdatacollection.ReceiverService;
+import com.sintho.nfcdatacollection.communication.ReceiverService;
 import com.sintho.nfcdatacollection.db.DBLogContract;
 import com.sintho.nfcdatacollection.db.DBLogHelper;
 

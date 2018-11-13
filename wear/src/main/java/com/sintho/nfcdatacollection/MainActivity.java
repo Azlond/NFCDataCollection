@@ -1,6 +1,9 @@
 package com.sintho.nfcdatacollection;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
@@ -26,6 +29,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent i = new Intent("com.sintho.nfcdatacollection.SYNC_SERVICE");
+        sendBroadcast(i);
 
         final DBHelper mDbHelper = new DBHelper(getApplicationContext());
         Button dbLogButton = (Button) findViewById(R.id.dbButton);
