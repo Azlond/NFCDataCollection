@@ -86,6 +86,7 @@ public class ReceiverActivity extends Activity {
                         json.put(NFCIDSTRING, id);
                     }
                     cursor.close();
+                    db.close();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

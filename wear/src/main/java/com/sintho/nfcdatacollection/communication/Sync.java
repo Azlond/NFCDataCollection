@@ -71,6 +71,7 @@ public class Sync extends IntentService {
             nfcIds.add(id);
         }
         cursor.close();
+        db.close();
         for (int i = 0; i < itemIds.size(); i++) {
             JSONObject json = new JSONObject();
             try {

@@ -1,6 +1,7 @@
 package com.sintho.nfcdatacollection.communication;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -21,6 +22,7 @@ public class ReceiverService extends WearableListenerService {
 
     //for communication with phone
     private static final String RECEIVED = "RECEIVED";
+    private static final String SYNC = "SYNC";
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
@@ -52,6 +54,11 @@ public class ReceiverService extends WearableListenerService {
             ContentValues values = new ContentValues();
             values.put(DBContract.DBEntry.COLUMN_SYNCED, 1);
             db.update(DBContract.DBEntry.TABLE_NAME, values, DBContract.DBEntry._ID+ " = ?", new String[]{String.valueOf(id)});
+            db.close();
+        } else if (messageEvent.getPath().equals(SYNC)) {
+            Log.d(LOGTAG, "Received SYNC request");
+            Intent i = new Intent(getApplicationContext(), Sync.class);
+            startService(i);
         }
     }
 }

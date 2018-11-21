@@ -87,60 +87,62 @@ public class ReceiverService extends WearableListenerService {
                     null,                   // don't filter by row groups
                     sortOrder               // The sort order
             );
+            try {
+                if (cursor.getCount() == 0) {
+                    Log.d(LOGTAG, "new entry for db");
+                    ContentValues values = new ContentValues();
+                    values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
 
-            if (cursor.getCount() == 0) {
-                cursor.close();
-                Log.d(LOGTAG, "new entry for db");
-                ContentValues values = new ContentValues();
-                values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
-
-                /*
-                 * check if a name is already assigned to this tagID, else use empty string
-                 */
-                DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
-                SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
-                sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
-                cursor = dbNames.query(
-                        DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
-                        null,             // The array of columns to return (pass null to get all)
-                        DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
-                        new String[]{nfcID},          // The values for the WHERE clause
-                        null,                   // don't group the rows
-                        null,                   // don't filter by row groups
-                        sortOrder               // The sort order
-                );
-                if (cursor.getCount() > 0) {
-                    cursor.moveToFirst();
-                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
-                    values.put(DBLogContract.DBLogEntry.COLUMN_NAME, name);
-                } else {
-                    values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
-                }
-                cursor.close();
-                values.put(DBLogContract.DBLogEntry.COLUMN_DATE, date);
-                values.put(DBLogContract.DBLogEntry.COLUMN_ID, id);
-
-                long newRowId = db.insert(DBLogContract.DBLogEntry.TABLE_NAME, null, values);
-                if (newRowId == -1) {
-                    try {
-                        throw new Exception(String.format("row not inserted: %d", newRowId));
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    /*
+                     * check if a name is already assigned to this tagID, else use empty string
+                     */
+                    DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
+                    SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
+                    sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
+                    Cursor cursor2 = dbNames.query(
+                            DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
+                            null,             // The array of columns to return (pass null to get all)
+                            DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
+                            new String[]{nfcID},          // The values for the WHERE clause
+                            null,                   // don't group the rows
+                            null,                   // don't filter by row groups
+                            sortOrder               // The sort order
+                    );
+                    if (cursor2.getCount() > 0) {
+                        cursor2.moveToFirst();
+                        String name = cursor2.getString(cursor2.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
+                        values.put(DBLogContract.DBLogEntry.COLUMN_NAME, name);
+                    } else {
+                        values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
                     }
+                    cursor2.close();
+                    values.put(DBLogContract.DBLogEntry.COLUMN_DATE, date);
+                    values.put(DBLogContract.DBLogEntry.COLUMN_ID, id);
+
+                    long newRowId = db.insert(DBLogContract.DBLogEntry.TABLE_NAME, null, values);
+                    if (newRowId == -1) {
+                        try {
+                            throw new Exception(String.format("row not inserted: %d", newRowId));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.d(LOGTAG, "Successfully added new entry to log database");
+                    Log.d(LOGTAG, String.format("Broadcasting %s to update NFC-Log fragment UI", NFCTAGCAST));
+                    Intent broadcastIntent = new Intent(NFCTAGCAST);
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
                 }
-                Log.d(LOGTAG, "Successfully added new entry to log database");
-                Log.d(LOGTAG, String.format("Broadcasting %s to update NFC-Log fragment UI", NFCTAGCAST));
-                Intent broadcastIntent = new Intent(NFCTAGCAST);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
-            } else {
-                Log.d(LOGTAG, "Already received row with id: " + id);
+            } finally {
                 cursor.close();
+                dbRead.close();
+                db.close();
             }
             /*
              * confirm to watch that row #id has been received
              */
             Log.d(LOGTAG, "sending confirmation message");
             Intent watchIntent = new Intent(ReceiverService.this, TransmitService.class);
+            watchIntent.putExtra(TransmitService.TASK, TransmitService.CONFIRMATION);
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put(IDSTRING, id);
@@ -190,8 +192,10 @@ public class ReceiverService extends WearableListenerService {
                 Log.d(LOGTAG, String.format("Tag %s has already been registered", nfcID));
                 showNotification(getApplicationContext(), nfcID, cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME)));
                 cursor.close();
+                dbNames.close();
                 return;
             } else {
+                dbNames.close();
                 cursor.close();
             }
             SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
@@ -208,6 +212,7 @@ public class ReceiverService extends WearableListenerService {
                     e.printStackTrace();
                 }
             }
+            db.close();
             Intent broadcastIntent = new Intent(FRAGREGISTER);
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
         }

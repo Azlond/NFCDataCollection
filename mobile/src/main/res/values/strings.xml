@@ -23,4 +23,7 @@
     <string name="tableValueMissingID">The ID of the Tag will be displayed here</string>
     <string name="tableValueMissingName">The name of the Tag will be displayed here</string>
     <string name="tableValueMissingDate">The date of the Tag will be displayed here</string>
+
+    <string name="sync">Sync</string>
+    <string name="connected">Connected</string>
 </resources>

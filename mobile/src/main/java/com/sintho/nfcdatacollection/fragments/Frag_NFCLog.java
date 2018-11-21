@@ -188,6 +188,7 @@ public class Frag_NFCLog extends Fragment {
             nfcIds.add(id);
         }
         cursor.close();
+        db.close();
 
         /*
          * if the query returns result, display them

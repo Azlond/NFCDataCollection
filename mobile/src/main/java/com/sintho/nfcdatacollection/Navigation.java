@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -18,13 +19,27 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.CapabilityApi;
+import com.google.android.gms.wearable.CapabilityInfo;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 import com.sintho.nfcdatacollection.communication.ReceiverService;
+import com.sintho.nfcdatacollection.communication.TransmitService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 
-public class Navigation extends AppCompatActivity {
+import java.util.List;
+
+import static com.google.android.gms.wearable.CapabilityApi.*;
+
+public class Navigation extends AppCompatActivity implements NodeApi.NodeListener {
     //TODO: replace icons in drawer
     private static final String LOGTAG = Navigation.class.getName();
     /**
@@ -46,6 +61,10 @@ public class Navigation extends AppCompatActivity {
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
     private BroadcastReceiver receiver;
+
+    private CheckBox wearableConnected;
+
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,6 +111,43 @@ public class Navigation extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 receiver, new IntentFilter(ReceiverService.FRAGREGISTER)
         );
+
+        //add functionality for sync button
+        Button syncButton = (Button) findViewById(R.id.syncButton);
+        syncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent syncIntent = new Intent(getApplicationContext(), TransmitService.class);
+                syncIntent.putExtra(TransmitService.TASK, TransmitService.SYNC);
+                startService(syncIntent);
+            }
+        });
+        wearableConnected = (CheckBox) findViewById(R.id.connectIndicator);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
+        Wearable.NodeApi.addListener(mGoogleApiClient, this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                mGoogleApiClient.blockingConnect();
+                final List<Node> connectedNodes = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await().getNodes();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (connectedNodes == null || connectedNodes.isEmpty()) {
+                            wearableConnected.setChecked(false);
+                        } else {
+                            wearableConnected.setChecked(true);
+                        }}
+                });
+
+            }
+        });
     }
 
     @Override
@@ -236,4 +292,25 @@ public class Navigation extends AppCompatActivity {
         //calling sync state is necessary or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
     }
+
+    @Override
+    public void onPeerConnected(Node node) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(LOGTAG, "Device connected, updating UI");
+                wearableConnected.setChecked(true);
+            }
+        });
+    }
+
+    @Override
+    public void onPeerDisconnected(Node node) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(LOGTAG, "Device disconnected, updating UI");
+                wearableConnected.setChecked(false);
+            }
+        });    }
 }

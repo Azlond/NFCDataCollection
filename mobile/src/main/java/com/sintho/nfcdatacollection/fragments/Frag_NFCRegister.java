@@ -138,12 +138,13 @@ public class Frag_NFCRegister extends Fragment {
                 ContentValues values = new ContentValues();
                 values.put(DBRegisterContract.DBRegisterEntry.COLUMN_NAME, String.valueOf(name.getText()));
                 registerDB.update(DBRegisterContract.DBRegisterEntry.TABLE_NAME, values, DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
-
+                registerDB.close();
                 DBLogHelper mdbLogHelper = new DBLogHelper(getContext());
                 SQLiteDatabase logDB = mdbLogHelper.getWritableDatabase();
                 ContentValues nameValue = new ContentValues();
                 nameValue.put(DBLogContract.DBLogEntry.COLUMN_NAME, String.valueOf(name.getText()));
                 logDB.update(DBLogContract.DBLogEntry.TABLE_NAME, nameValue, DBLogContract.DBLogEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
+                logDB.close();
                 Toast.makeText(getActivity(), R.string.savedNewName, Toast.LENGTH_LONG).show();
             }
         });
@@ -195,6 +196,7 @@ public class Frag_NFCRegister extends Fragment {
             nfcIds.add(id);
         }
         cursor.close();
+        db.close();
 
         /*
          * if the query returns result, display them
