@@ -2,6 +2,7 @@ package com.sintho.nfcdatacollection.communication;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -10,6 +11,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
+import com.sintho.nfcdatacollection.MainActivity;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,39 +38,41 @@ public class TransmitService extends IntentService {
             if (intent.hasExtra(SCANTAG)) {
                 Log.d(LOGTAG, SCANTAG);
 
-                GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
-                googleApiClient.blockingConnect();
-
-                String connectedNode = getConnectedNodeID(googleApiClient);
-                if (connectedNode == null) {
-                    Log.d(LOGTAG, "Phone not connected");
-                    return;
+                if (sendMessage(intent.getByteArrayExtra(JSONBYTEARRAY), SCANTAG)) {
+                    Log.d(LOGTAG, "Sent SCANTAG message");
                 }
-
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, SCANTAG, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
-                if (!result.getStatus().isSuccess()) {
-                    Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
+            } else if (intent.hasExtra(MainActivity.BATTERYNOTIFICATION)) {
+                if (sendMessage(new byte[]{}, MainActivity.BATTERYNOTIFICATION)) {
+                    SharedPreferences.Editor editor = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE).edit();
+                    editor.putBoolean(MainActivity.BATTERYNOTIFICATION, true);
+                    editor.apply();
                 }
-                Log.d(LOGTAG, "Sent SCANTAG message");
             } else {
-                GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
-                googleApiClient.blockingConnect();
-
-                String connectedNode = getConnectedNodeID(googleApiClient);
-                if (connectedNode == null) {
-                    Log.d(LOGTAG, "Phone not connected");
-                    return;
+                if (sendMessage(intent.getByteArrayExtra(JSONBYTEARRAY), TAGFOUND)) {
+                    Log.d(LOGTAG, "Sent REGISTER message");
                 }
-
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, TAGFOUND, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
-                if (!result.getStatus().isSuccess()) {
-                    Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
-                }
-                Log.d(LOGTAG, "Sent");
             }
         } finally {
             sendWakelock.release();
         }
+    }
+
+    private boolean sendMessage(byte[] array, String tag) {
+        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
+        googleApiClient.blockingConnect();
+
+        String connectedNode = getConnectedNodeID(googleApiClient);
+        if (connectedNode == null) {
+            Log.d(LOGTAG, "Phone not connected");
+            return false;
+        }
+
+        MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, tag, array).await();
+        if (!result.getStatus().isSuccess()) {
+            Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
+            return false;
+        }
+        return true;
     }
 
 

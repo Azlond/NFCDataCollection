@@ -8,7 +8,8 @@ import android.view.View;
 import android.widget.Button;
 
 public class MainActivity extends Activity {
-
+    public static final String SHAREDPREFERENCESKEY = "NFCSharedPrefereces";
+    public static final String BATTERYNOTIFICATION = "BatteryNotification";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,5 +27,5 @@ public class MainActivity extends Activity {
                     startActivity(i);
             }
         });
-}
+    }
 }

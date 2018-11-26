@@ -37,6 +37,7 @@ public class ReceiverService extends WearableListenerService {
     private static final String NFCIDSTRING = "nfcid";
     private static final String TAGFOUND = "FOUND_TAG";
     private static final String SCANTAG = "SCANTAG";
+    private static final String BATTERYNOTIFICATION = "BatteryNotification";
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
@@ -138,7 +139,9 @@ public class ReceiverService extends WearableListenerService {
                 name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
             }
             cursor.close();
-            showNotification(getApplicationContext(), nfcID, name);
+            showNotification(getApplicationContext(), String.format("ID %s has already been registered with name %s", nfcID, name));
+        } else if (messageEvent.getPath().equals(BATTERYNOTIFICATION)) {
+            showNotification(getApplicationContext(), "The battery level of your smart watch has dropped below 50%.");
         }
     }
 
@@ -192,29 +195,6 @@ public class ReceiverService extends WearableListenerService {
      */
     private void addToRegister(String nfcID) {
         DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
-        SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
-        String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
-        Cursor cursor = dbNames.query(
-                DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
-                new String[]{nfcID},          // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                sortOrder               // The sort order
-        );
-        if (cursor.getCount() > 0) {
-            //tag has already been registered
-            cursor.moveToFirst();
-            Log.d(LOGTAG, String.format("Tag %s has already been registered", nfcID));
-            showNotification(getApplicationContext(), nfcID, cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME)));
-            cursor.close();
-            dbNames.close();
-            return;
-        } else {
-            dbNames.close();
-            cursor.close();
-        }
         SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -237,13 +217,11 @@ public class ReceiverService extends WearableListenerService {
     /**
      * shows a local notification with the tag id and (potentially) given name
      * @param context
-     * @param nfcID
-     * @param name
+     * @param message
      */
-    private void showNotification(Context context, String nfcID, String name) {
+    private void showNotification(Context context, String message) {
         Intent intent = new Intent(context, Navigation.class);
         PendingIntent pi = PendingIntent.getActivity(context, 5000, intent, 0);
-        String message = String.format("ID %s has already been registered with name %s", nfcID, name);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.cast_ic_notification_0)
                 .setContentTitle(getString(R.string.app_name))

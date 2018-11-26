@@ -2,12 +2,15 @@ package com.sintho.nfcdatacollection.communication;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.BatteryManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.sintho.nfcdatacollection.MainActivity;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
 
@@ -86,6 +89,28 @@ public class Sync extends IntentService {
             forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
             startService(forwardingIntent);
             Log.d(LOGTAG, "Sent synced item");
+        }
+        checkBatteryLife();
+    }
+
+    /**
+     * check battery life and notify phone if it's too low
+     */
+    private void checkBatteryLife() {
+        BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
+        int batteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        Log.d("MAINACTIVITY", Integer.toString(batteryLevel));
+        SharedPreferences prefs = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE);
+        boolean batteryNotificationSent = prefs.getBoolean(MainActivity.BATTERYNOTIFICATION, false);
+        if (batteryLevel < 50 && !batteryNotificationSent) {
+            Intent forwardingIntent = new Intent(this, TransmitService.class);
+            forwardingIntent.putExtra(MainActivity.BATTERYNOTIFICATION, true);
+            startService(forwardingIntent);
+        } else if (batteryLevel > 50 && batteryNotificationSent) {
+            //reset notification
+            SharedPreferences.Editor editor = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE).edit();
+            editor.putBoolean(MainActivity.BATTERYNOTIFICATION, false);
+            editor.apply();
         }
     }
 }
