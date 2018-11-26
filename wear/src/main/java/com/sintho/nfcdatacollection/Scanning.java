@@ -8,22 +8,23 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.TextView;
 
-public class Registering extends Activity {
-    private static final String LOGTAG = Registering.class.getName();
-    public static boolean registering = false;
+public class Scanning extends Activity {
+    private static final String LOGTAG = Scanning.class.getName();
+    public static boolean scanning = false;
     public static final String ONFINISH = "onfinish";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_registering);
+        setContentView(R.layout.activity_scanning);
 
-        final Activity reg = this;
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        reg.finish();
+                        TextView textView = (TextView) findViewById(R.id.scanTextView);
+                        textView.setText(intent.getStringExtra(ONFINISH));
                     }
                 }, new IntentFilter(ONFINISH)
         );
@@ -32,14 +33,14 @@ public class Registering extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        registering = true;
+        scanning = true;
         Log.d(LOGTAG, "Setting registering to true");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        registering = false;
+        scanning = false;
         Log.d(LOGTAG, "Setting registering to false, onStop");
     }
 }

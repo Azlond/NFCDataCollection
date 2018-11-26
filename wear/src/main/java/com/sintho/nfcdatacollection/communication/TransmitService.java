@@ -4,14 +4,12 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
-import com.sintho.nfcdatacollection.Registering;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,7 +20,7 @@ public class TransmitService extends IntentService {
     private static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
     private static final String TAGFOUND = "FOUND_TAG";
 
-    public static final String REGISTER = "REGISTER";
+    public static final String SCANTAG = "SCANTAG";
     public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
 
     public TransmitService()
@@ -35,12 +33,8 @@ public class TransmitService extends IntentService {
         @SuppressWarnings("ConstantConditions") PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
         sendWakelock.acquire(1000*60);
         try {
-            if (intent.hasExtra(REGISTER)) {
-                Log.d(LOGTAG, REGISTER);
-
-                //Notify activity that registering is complete
-                Intent broadcastIntent = new Intent(Registering.ONFINISH);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
+            if (intent.hasExtra(SCANTAG)) {
+                Log.d(LOGTAG, SCANTAG);
 
                 GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
                 googleApiClient.blockingConnect();
@@ -51,11 +45,11 @@ public class TransmitService extends IntentService {
                     return;
                 }
 
-                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, REGISTER, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, SCANTAG, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
                 if (!result.getStatus().isSuccess()) {
                     Log.d(LOGTAG, "Could not transmit NFC: " + result.getStatus().getStatusMessage());
                 }
-                Log.d(LOGTAG, "Sent register message");
+                Log.d(LOGTAG, "Sent SCANTAG message");
             } else {
                 GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
                 googleApiClient.blockingConnect();

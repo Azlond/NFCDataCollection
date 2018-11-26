@@ -12,6 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/light_grey"
-        android:text="@string/register_tag"
+        android:text="@string/get_tag_ID"
         android:textColor="@color/black" />
 </LinearLayout>

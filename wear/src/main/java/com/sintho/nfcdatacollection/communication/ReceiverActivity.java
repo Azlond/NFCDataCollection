@@ -9,8 +9,9 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.v4.content.LocalBroadcastManager;
 
-import com.sintho.nfcdatacollection.Registering;
+import com.sintho.nfcdatacollection.Scanning;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
 
@@ -36,9 +37,9 @@ public class ReceiverActivity extends Activity {
             //noinspection ConstantConditions
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
 
-            if (Registering.registering) {
+            if (Scanning.scanning) {
                 Intent forwardingIntent = new Intent(this, TransmitService.class);
-                forwardingIntent.putExtra(TransmitService.REGISTER, true);
+                forwardingIntent.putExtra(TransmitService.SCANTAG, true);
                 JSONObject json = new JSONObject();
                 try {
                     json.put(NFCIDSTRING, tagUID);
@@ -47,6 +48,10 @@ public class ReceiverActivity extends Activity {
                 }
                 forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
                 startService(forwardingIntent);
+                //Notify activity that registering is complete
+                Intent broadcastIntent = new Intent(Scanning.ONFINISH);
+                broadcastIntent.putExtra(Scanning.ONFINISH, tagUID);
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
             } else {
                 DBHelper mDbHelper = new DBHelper(getApplicationContext());
                 SQLiteDatabase db = mDbHelper.getWritableDatabase();

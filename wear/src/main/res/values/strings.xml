@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">NFCDataCollection</string>
-    <string name="register_tag">Register Tag</string>
-    <string name="registering">Registration started</string>
+    <string name="get_tag_ID">Get Tag ID</string>
+    <string name="scan_now">Scanning Tag…</string>
 </resources>

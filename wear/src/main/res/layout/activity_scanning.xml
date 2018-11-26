@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Registering">
+    tools:context=".Scanning">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,11 +12,11 @@
         android:background="#006400" >
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/scanTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/registering"
+            android:text="@string/scan_now"
             android:textAlignment="center"
             android:textSize="30sp" />
     </LinearLayout>

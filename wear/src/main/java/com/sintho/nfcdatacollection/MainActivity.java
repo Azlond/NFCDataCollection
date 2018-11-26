@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                     Log.d("MAIN", "register clicked");
-                    Intent i = new Intent(getApplicationContext(), Registering.class);
+                    Intent i = new Intent(getApplicationContext(), Scanning.class);
                     startActivity(i);
             }
         });

@@ -1,9 +1,7 @@
 package com.sintho.nfcdatacollection;
 
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,20 +22,15 @@ import android.widget.Button;
 import android.widget.CheckBox;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.CapabilityApi;
-import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
-import com.sintho.nfcdatacollection.communication.ReceiverService;
 import com.sintho.nfcdatacollection.communication.TransmitService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 
 import java.util.List;
-
-import static com.google.android.gms.wearable.CapabilityApi.*;
 
 public class Navigation extends AppCompatActivity implements NodeApi.NodeListener {
     //TODO: replace icons in drawer
@@ -92,25 +85,6 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
             CURRENT_TAG = TAG_LOG;
             loadHomeFragment();
         }
-
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.d(LOGTAG, "received message to switch fragments");
-                if (CURRENT_TAG.equals(TAG_REGISTER)) {
-                    return;
-                }
-                CURRENT_TAG = TAG_REGISTER;
-                navItemIndex = 1;
-                loadHomeFragment();
-            }
-        };
-
-        //register receiver
-        Log.d(LOGTAG, "registering broadcast-receiver");
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                receiver, new IntentFilter(ReceiverService.FRAGREGISTER)
-        );
 
         //add functionality for sync button
         Button syncButton = (Button) findViewById(R.id.syncButton);

@@ -1,12 +1,17 @@
 package com.sintho.nfcdatacollection.fragments;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
@@ -17,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -27,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sintho.nfcdatacollection.R;
+import com.sintho.nfcdatacollection.communication.ReceiverService;
 import com.sintho.nfcdatacollection.db.DBLogContract;
 import com.sintho.nfcdatacollection.db.DBLogHelper;
 import com.sintho.nfcdatacollection.db.DBRegisterContract;
@@ -40,8 +47,45 @@ import java.util.List;
  */
 public class Frag_NFCRegister extends Fragment {
     private static final String LOGTAG = Frag_NFCRegister.class.getName();
+    private BroadcastReceiver receiver;
     public Frag_NFCRegister() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frameRegisterLayout);
+                if (frameLayout == null) {
+                    throw new NullPointerException("Layout does not exist");
+                }
+                TableLayout tableLayout = fillRegister();
+                frameLayout.removeAllViewsInLayout();
+                ScrollView scrollView = new ScrollView(getContext());
+                scrollView.addView(tableLayout);
+                frameLayout.addView(scrollView);
+            }
+        };
+
+        //register receiver
+        Log.d(LOGTAG, "registering broadcast-receiver");
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(
+                receiver, new IntentFilter(ReceiverService.FRAGREGISTER)
+        );
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //remove registered listener, we no longer need updates if the fragment is not visible
+        if (receiver != null) {
+            Log.d(LOGTAG, "unregistering broadcast-receiver");
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
+            receiver = null;
+        }
     }
 
     @Override
@@ -102,6 +146,18 @@ public class Frag_NFCRegister extends Fragment {
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 editText.setCursorVisible(false);
                 return false;
+            }
+        });
+
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (!hasFocus) {
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+
+                }
             }
         });
         return  editText;

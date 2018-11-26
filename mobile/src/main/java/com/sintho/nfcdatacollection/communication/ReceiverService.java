@@ -36,7 +36,7 @@ public class ReceiverService extends WearableListenerService {
     private static final String DATESTRING = "date";
     private static final String NFCIDSTRING = "nfcid";
     private static final String TAGFOUND = "FOUND_TAG";
-    private static final String REGISTER = "REGISTER";
+    private static final String SCANTAG = "SCANTAG";
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
@@ -47,24 +47,10 @@ public class ReceiverService extends WearableListenerService {
 
             //get byte data from message
             byte[] jsonBytes = messageEvent.getData();
-            int id = -1;
-            String date = null;
-            String nfcID = null;
-            try {
-                //decode byte array to string
-                String decoded = new String(jsonBytes, "UTF-8");
-                //parse string to json
-                JSONObject json = new JSONObject(decoded);
-                //get values from json
-                id = (Integer) json.get(IDSTRING);
-                date = (String) json.get(DATESTRING);
-                nfcID = (String) json.get(NFCIDSTRING);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            if (id == -1) {
+            Integer id = (Integer) getValueFromJSON(jsonBytes, IDSTRING);
+            String date = (String) getValueFromJSON(jsonBytes, DATESTRING);
+            String nfcID = (String) getValueFromJSON(jsonBytes, NFCIDSTRING);
+            if (id == null || date == null || nfcID == null) {
                 try {
                     throw new Exception("Invalid id value -1");
                 } catch (Exception e) {
@@ -93,27 +79,15 @@ public class ReceiverService extends WearableListenerService {
                     ContentValues values = new ContentValues();
                     values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
 
-                    /*
-                     * check if a name is already assigned to this tagID, else use empty string
-                     */
-                    DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
-                    SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
-                    sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
-                    Cursor cursor2 = dbNames.query(
-                            DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
-                            null,             // The array of columns to return (pass null to get all)
-                            DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
-                            new String[]{nfcID},          // The values for the WHERE clause
-                            null,                   // don't group the rows
-                            null,                   // don't filter by row groups
-                            sortOrder               // The sort order
-                    );
+                    Cursor cursor2 = getNameCursorFromDB(nfcID);
+
                     if (cursor2.getCount() > 0) {
                         cursor2.moveToFirst();
                         String name = cursor2.getString(cursor2.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
                         values.put(DBLogContract.DBLogEntry.COLUMN_NAME, name);
                     } else {
                         values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
+                        addToRegister(nfcID);
                     }
                     cursor2.close();
                     values.put(DBLogContract.DBLogEntry.COLUMN_DATE, date);
@@ -152,72 +126,120 @@ public class ReceiverService extends WearableListenerService {
             watchIntent.putExtra(TransmitService.JSONBYTEARRAY, jsonObject.toString().getBytes());
             startService(watchIntent);
             Log.d(LOGTAG, "Confirmation message sent");
-        } else if (messageEvent.getPath().equals(REGISTER)) {
-            Log.d(LOGTAG, "message event" + REGISTER);
-
+        } else if (messageEvent.getPath().equals(SCANTAG)) {
             byte[] jsonBytes = messageEvent.getData();
-            String nfcID = null;
-            try {
-                //decode byte array to string
-                String decoded = new String(jsonBytes, "UTF-8");
-                //parse string to json
-                JSONObject json = new JSONObject(decoded);
-                //get values from json
-                nfcID = (String) json.get(NFCIDSTRING);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            String nfcID = (String) getValueFromJSON(jsonBytes, NFCIDSTRING);
             Log.d(LOGTAG, String.format("gotTag: %s", nfcID));
 
-            /*
-             * check if a name is already assigned to this tagID, else use empty string
-             */
-            DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
-            SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
-            String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
-            Cursor cursor = dbNames.query(
-                    DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
-                    null,             // The array of columns to return (pass null to get all)
-                    DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
-                    new String[]{nfcID},          // The values for the WHERE clause
-                    null,                   // don't group the rows
-                    null,                   // don't filter by row groups
-                    sortOrder               // The sort order
-            );
+            Cursor cursor = getNameCursorFromDB(nfcID);
+            String name = "";
             if (cursor.getCount() > 0) {
-                //tag has already been registered
                 cursor.moveToFirst();
-                Log.d(LOGTAG, String.format("Tag %s has already been registered", nfcID));
-                showNotification(getApplicationContext(), nfcID, cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME)));
-                cursor.close();
-                dbNames.close();
-                return;
-            } else {
-                dbNames.close();
-                cursor.close();
+                name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
             }
-            SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-            values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
-            values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
-
-            long newRowId = db.insert(DBRegisterContract.DBRegisterEntry.TABLE_NAME, null, values);
-            if (newRowId == -1) {
-                try {
-                    throw new Exception(String.format("row not inserted: %d", newRowId));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            db.close();
-            Intent broadcastIntent = new Intent(FRAGREGISTER);
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
+            cursor.close();
+            showNotification(getApplicationContext(), nfcID, name);
         }
     }
 
+    /**
+     *
+     * @param jsonBytes byte array containing a json
+     * @param key key to retrieve value from json
+     * @return value of key
+     */
+    private Object getValueFromJSON(byte[] jsonBytes, String key) {
+        Object value = null;
+        try {
+            //decode byte array to string
+            String decoded = new String(jsonBytes, "UTF-8");
+            //parse string to json
+            JSONObject json = new JSONObject(decoded);
+            //get values from json
+            value = json.get(key);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    /**
+     * checks the db to see if the ID already has a name
+     * if cursor.getCount() > 0, it does already have a name
+     * @param nfcID
+     * @return
+     */
+    private Cursor getNameCursorFromDB(String nfcID) {
+        DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
+        SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
+        String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
+        return dbNames.query(
+                DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
+                new String[]{nfcID},          // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                sortOrder               // The sort order
+        );
+    }
+
+    /**
+     * adds ID to the register-names db
+     * @param nfcID
+     */
+    private void addToRegister(String nfcID) {
+        DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
+        SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
+        String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
+        Cursor cursor = dbNames.query(
+                DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
+                new String[]{nfcID},          // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                sortOrder               // The sort order
+        );
+        if (cursor.getCount() > 0) {
+            //tag has already been registered
+            cursor.moveToFirst();
+            Log.d(LOGTAG, String.format("Tag %s has already been registered", nfcID));
+            showNotification(getApplicationContext(), nfcID, cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME)));
+            cursor.close();
+            dbNames.close();
+            return;
+        } else {
+            dbNames.close();
+            cursor.close();
+        }
+        SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
+        values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
+
+        long newRowId = db.insert(DBRegisterContract.DBRegisterEntry.TABLE_NAME, null, values);
+        if (newRowId == -1) {
+            try {
+                throw new Exception(String.format("row not inserted: %d", newRowId));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        db.close();
+        Intent broadcastIntent = new Intent(FRAGREGISTER);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
+    }
+
+    /**
+     * shows a local notification with the tag id and (potentially) given name
+     * @param context
+     * @param nfcID
+     * @param name
+     */
     private void showNotification(Context context, String nfcID, String name) {
         Intent intent = new Intent(context, Navigation.class);
         PendingIntent pi = PendingIntent.getActivity(context, 5000, intent, 0);

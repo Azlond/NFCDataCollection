@@ -60,7 +60,7 @@
             android:enabled="true"
             android:exported="false"/>
 
-        <activity android:name=".Registering" />
+        <activity android:name=".Scanning" />
     </application>
 
 </manifest>
