@@ -223,7 +223,7 @@ public class ReceiverService extends WearableListenerService {
         Intent intent = new Intent(context, Navigation.class);
         PendingIntent pi = PendingIntent.getActivity(context, 5000, intent, 0);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.cast_ic_notification_0)
+                .setSmallIcon(R.drawable.ic_iconfinder_nfc_tag_1613763)
                 .setContentTitle(getString(R.string.app_name))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                 .setContentText(message);
