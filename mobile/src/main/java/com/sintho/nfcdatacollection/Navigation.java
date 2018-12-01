@@ -27,6 +27,7 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 import com.sintho.nfcdatacollection.communication.TransmitService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
+import com.sintho.nfcdatacollection.fragments.Frag_Feedback;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 
@@ -40,6 +41,7 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
      */
     private static final String TAG_LOG = "log";
     private static final String TAG_REGISTER = "register";
+    private static final String TAG_FEEDBACK = "feedback";
     private static final String TAG_CONTACT = "contact";
 
     // index to identify current nav menu item
@@ -205,6 +207,8 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                 return new Frag_NFCRegister();
             case 2:
                 return new Frag_Contact();
+            case 3:
+                return new Frag_Feedback();
             default:
                 return new Frag_NFCLog();
         }
@@ -241,6 +245,10 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                     case R.id.nav_contact:
                         navItemIndex = 2;
                         CURRENT_TAG = TAG_CONTACT;
+                        break;
+                    case R.id.nav_feedback:
+                        navItemIndex = 3;
+                        CURRENT_TAG = TAG_FEEDBACK;
                         break;
                     default:
                         navItemIndex = 0;

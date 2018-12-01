@@ -4,6 +4,7 @@
     <string name="nav_register">Register</string>
     <string name="nav_header_title">NFC Data Collection</string>
     <string name="nav_contact">Contact</string>
+    <string name="nav_feedback">Feedback</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Contact information will be displayed here</string>

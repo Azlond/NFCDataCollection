@@ -99,7 +99,7 @@ public class Sync extends IntentService {
     private void checkBatteryLife() {
         BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
         int batteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        Log.d("MAINACTIVITY", Integer.toString(batteryLevel));
+        Log.d(LOGTAG, String.format("Battery level: %d", batteryLevel));
         SharedPreferences prefs = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE);
         boolean batteryNotificationSent = prefs.getBoolean(MainActivity.BATTERYNOTIFICATION, false);
         if (batteryLevel < 50 && !batteryNotificationSent) {
