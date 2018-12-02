@@ -1,5 +1,7 @@
 package com.sintho.nfcdatacollection.fragments;
 
+import android.annotation.SuppressLint;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -34,14 +36,12 @@ public class Frag_Feedback extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_frag__feedback, container, false);
+        final View v = inflater.inflate(R.layout.fragment_frag__feedback, container, false);
         WebView webView = (WebView) v.findViewById(R.id.feedbackWebView);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webView.loadUrl("https://rebrand.ly/nfclmufeedback");
         webView.setWebViewClient(new WebViewClient());
-
-
         return v;
     }
 }

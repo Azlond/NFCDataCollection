@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -25,6 +26,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
+import com.sintho.nfcdatacollection.communication.NotificationsListenerService;
+import com.sintho.nfcdatacollection.communication.RegistrationService;
 import com.sintho.nfcdatacollection.communication.TransmitService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
 import com.sintho.nfcdatacollection.fragments.Frag_Feedback;
@@ -64,6 +67,10 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent i = new Intent(this, RegistrationService.class);
+        startService(i);
+
         setContentView(R.layout.activity_navigation);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,9 +89,15 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
         // initializing navigation menu
         setUpNavigationView();
 
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null && !getIntent().hasExtra(NotificationsListenerService.FEEDBACKFRAGMENT)) {
             navItemIndex = 0;
             CURRENT_TAG = TAG_LOG;
+            loadHomeFragment();
+        }
+
+        if (getIntent().hasExtra(NotificationsListenerService.FEEDBACKFRAGMENT)) {
+            navItemIndex = 3;
+            CURRENT_TAG = TAG_FEEDBACK;
             loadHomeFragment();
         }
 

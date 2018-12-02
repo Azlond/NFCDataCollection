@@ -27,4 +27,6 @@
 
     <string name="sync">Sync</string>
     <string name="connected">Connected</string>
+
+    <string name="subscriptionID">/topics/study</string>
 </resources>
