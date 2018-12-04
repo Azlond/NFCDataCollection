@@ -1,20 +1,16 @@
 package com.sintho.nfcdatacollection.communication;
 
 import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
-import com.sintho.nfcdatacollection.Navigation;
+import com.sintho.nfcdatacollection.Notifications;
 import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.db.DBLogContract;
 import com.sintho.nfcdatacollection.db.DBLogHelper;
@@ -139,9 +135,11 @@ public class ReceiverService extends WearableListenerService {
                 name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
             }
             cursor.close();
-            showNotification(getApplicationContext(), String.format("ID %s has already been registered with name %s", nfcID, name));
+//            Intent intent = new Intent(getApplicationContext(), Navigation.class);
+//            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), String.format("ID %s has already been registered with name %s", nfcID, name), null, Notification.PRIORITY_HIGH);
         } else if (messageEvent.getPath().equals(BATTERYNOTIFICATION)) {
-            showNotification(getApplicationContext(), "The battery level of your smart watch has dropped below 50%.");
+            Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), "The battery level of your smart watch has dropped below 50%.", null, Notification.PRIORITY_HIGH);
         }
     }
 
@@ -212,27 +210,5 @@ public class ReceiverService extends WearableListenerService {
         db.close();
         Intent broadcastIntent = new Intent(FRAGREGISTER);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
-    }
-
-    /**
-     * shows a local notification with the tag id and (potentially) given name
-     * @param context
-     * @param message
-     */
-    private void showNotification(Context context, String message) {
-        Intent intent = new Intent(context, Navigation.class);
-        PendingIntent pi = PendingIntent.getActivity(context, 5000, intent, 0);
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.ic_iconfinder_nfc_tag_1613763)
-                .setContentTitle(getString(R.string.app_name))
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-                .setContentText(message);
-        mBuilder.setContentIntent(pi);
-        mBuilder.setDefaults(Notification.DEFAULT_SOUND);
-        mBuilder.setAutoCancel(true);
-        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (mNotificationManager != null) {
-            mNotificationManager.notify(5000, mBuilder.build());
-        }
     }
 }

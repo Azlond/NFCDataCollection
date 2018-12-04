@@ -32,6 +32,7 @@ import com.sintho.nfcdatacollection.fragments.Frag_Contact;
 import com.sintho.nfcdatacollection.fragments.Frag_Feedback;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
+import com.sintho.nfcdatacollection.fragments.Frag_Settings;
 
 import java.util.List;
 
@@ -45,6 +46,7 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
     private static final String TAG_REGISTER = "register";
     private static final String TAG_FEEDBACK = "feedback";
     private static final String TAG_CONTACT = "contact";
+    private static final String TAG_SETTINGS = "settings";
 
     // index to identify current nav menu item
     private static int navItemIndex = 0;
@@ -221,6 +223,8 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                 return new Frag_Contact();
             case 3:
                 return new Frag_Feedback();
+            case 4:
+                return new Frag_Settings();
             default:
                 return new Frag_NFCLog();
         }
@@ -261,6 +265,10 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                     case R.id.nav_feedback:
                         navItemIndex = 3;
                         CURRENT_TAG = TAG_FEEDBACK;
+                        break;
+                    case R.id.nav_settings:
+                        navItemIndex = 4;
+                        CURRENT_TAG = TAG_SETTINGS;
                         break;
                     default:
                         navItemIndex = 0;
