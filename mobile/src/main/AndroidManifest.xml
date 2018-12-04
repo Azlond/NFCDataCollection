@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <permission android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE" android:protectionLevel="signature" />
     <uses-permission android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -39,18 +40,19 @@
             </intent-filter>
         </receiver>
         <service
-            android:name="com.sintho.nfcdatacollection.communication.RegistrationService"
+            android:name="com.sintho.nfcdatacollection.fcm.RegistrationService"
             android:exported="false" />
-        <service android:name="com.sintho.nfcdatacollection.communication.TokenRefreshListenerService" android:exported="false">
+        <service android:name="com.sintho.nfcdatacollection.fcm.TokenRefreshListenerService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID"></action>
             </intent-filter>
         </service>
-        <service android:name="com.sintho.nfcdatacollection.communication.NotificationsListenerService" android:exported="false">
+        <service android:name="com.sintho.nfcdatacollection.fcm.NotificationsListenerService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE"></action>
             </intent-filter>
         </service>
+        <service android:name="com.sintho.nfcdatacollection.geo.GeofenceTransitionsIntentService"/>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.sintho.nfcdatacollection.communication;
+package com.sintho.nfcdatacollection.fcm;
 
 import android.app.IntentService;
 import android.content.Intent;
