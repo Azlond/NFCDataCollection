@@ -116,6 +116,9 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
 
         mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
         Wearable.NodeApi.addListener(mGoogleApiClient, this);
+
+        Intent i1 = new Intent("com.sintho.nfcdatacollection.SYNC_SERVICE");
+        sendBroadcast(i1);
     }
 
     @Override

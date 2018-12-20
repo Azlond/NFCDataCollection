@@ -19,4 +19,12 @@
        android:layout_centerHorizontal="true"
        android:layout_below="@id/locationCheckbox"/>
 
+   <EditText
+       android:id="@+id/participantIDEditText"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:hint="@string/enter_participant_id"
+       android:layout_below="@id/locationButton"
+       android:layout_centerHorizontal="true"/>
+
 </RelativeLayout>

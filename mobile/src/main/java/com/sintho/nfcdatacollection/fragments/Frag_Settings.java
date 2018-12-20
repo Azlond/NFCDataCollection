@@ -14,19 +14,25 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingApi;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.sintho.nfcdatacollection.Notifications;
@@ -45,6 +51,8 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
     private static final String LOGTAG = Frag_Settings.class.getName();
     private static final String LOCATIONCHECKBOX = "LOCATIONCHECKBOX";
     private static final String LOCATIONCHECKBOXTICKED = "LOCATIONCHECKBOXTICKED";
+    public static final String PARTICIPANTIDSHARED = "PARTICIPANTIDSHARED";
+    public static final String PARTICIPANTIDKEY = "PARTICIPANTIDKEY";
     private static final String REQUESTID = "1337";
     private static final int RADIUS = 100;
     private static final String LATITUDE = "LATITUDE";
@@ -112,6 +120,62 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
             locationButton.setEnabled(false);
             locationCheckBox.setEnabled(false);
         }
+
+        final EditText participantIDEditText = (EditText) v.findViewById(R.id.participantIDEditText);
+        SharedPreferences prefs2 = getContext().getSharedPreferences(Frag_Settings.PARTICIPANTIDSHARED, MODE_PRIVATE);
+        String token = prefs2.getString(Frag_Settings.PARTICIPANTIDKEY, "-1");
+        if (!token.equals(("-1"))) {
+            participantIDEditText.setText(token);
+        }
+        participantIDEditText.setCursorVisible(false);
+        participantIDEditText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        participantIDEditText.setSingleLine(true);
+        participantIDEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (view.getId() == participantIDEditText.getId()) {
+                    participantIDEditText.setCursorVisible(true);
+                }
+            }
+        });
+        participantIDEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                participantIDEditText.setCursorVisible(false);
+                return false;
+            }
+        });
+
+        participantIDEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (!hasFocus) {
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(participantIDEditText.getWindowToken(), 0);
+
+                }
+            }
+        });
+        participantIDEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                SharedPreferences.Editor editor = getActivity().getSharedPreferences(PARTICIPANTIDSHARED, MODE_PRIVATE).edit();
+                editor.putString(PARTICIPANTIDKEY, String.valueOf(participantIDEditText.getText()));
+                editor.apply();
+            }
+        });
+
         return v;
     }
 

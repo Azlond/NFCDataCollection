@@ -33,4 +33,5 @@
 
     <string name="locationButton">Set home location</string>
     <string name="locationCheckbox">Receive location reminders for Smartwatch</string>
+    <string name="enter_participant_id">Enter participant ID</string>
 </resources>

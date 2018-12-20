@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBLogHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "NFCDataset.db";
+    public static final String DATABASE_NAME = "NFCDataset.db";
 
     private static final String SQL_CREATE_DB =
             "CREATE TABLE IF NOT EXISTS " + DBLogContract.DBLogEntry.TABLE_NAME + " (" +

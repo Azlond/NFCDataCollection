@@ -2,14 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sintho.nfcdatacollection">
+
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <permission android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <permission
+        android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
     <uses-permission android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -30,33 +36,59 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver" android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND" >
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
                 <category android:name="com.sintho.nfcdatacollection" />
             </intent-filter>
         </receiver>
+
         <service
-            android:name="com.sintho.nfcdatacollection.fcm.RegistrationService"
+            android:name=".fcm.RegistrationService"
             android:exported="false" />
-        <service android:name="com.sintho.nfcdatacollection.fcm.TokenRefreshListenerService" android:exported="false">
+        <service
+            android:name=".fcm.TokenRefreshListenerService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
-        <service android:name="com.sintho.nfcdatacollection.fcm.NotificationsListenerService" android:exported="false">
+        <service
+            android:name=".fcm.NotificationsListenerService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-        <service android:name="com.sintho.nfcdatacollection.geo.GeofenceTransitionsIntentService"/>
-        <receiver android:name=".geo.GeoReceiver"
-            android:process=":remote"/>
+        <service android:name=".geo.GeofenceTransitionsIntentService" />
+
+        <receiver
+            android:name=".geo.GeoReceiver"
+            android:process=":remote" />
+
+        <service
+            android:name=".db.DBSyncService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".communication.autostart"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.sintho.nfcdatacollection.SYNC_SERVICE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
