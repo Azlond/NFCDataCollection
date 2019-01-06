@@ -34,10 +34,8 @@ import android.widget.Toast;
 
 import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.communication.ReceiverService;
-import com.sintho.nfcdatacollection.db.DBLogContract;
-import com.sintho.nfcdatacollection.db.DBLogHelper;
-import com.sintho.nfcdatacollection.db.DBRegisterContract;
-import com.sintho.nfcdatacollection.db.DBRegisterHelper;
+import com.sintho.nfcdatacollection.db.DBContract;
+import com.sintho.nfcdatacollection.db.DBHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -189,17 +187,17 @@ public class Frag_NFCRegister extends Fragment {
             public void onClick(View view) {
                 Log.d(LOGTAG, String.format("Clicked id %s with new name %s", nfcID.getText(), name.getText()));
                 //update id->name database
-                DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getContext());
+                DBHelper mDbRegisterHelper = new DBHelper(getContext());
                 SQLiteDatabase registerDB = mDbRegisterHelper.getWritableDatabase();
                 ContentValues values = new ContentValues();
-                values.put(DBRegisterContract.DBRegisterEntry.COLUMN_NAME, String.valueOf(name.getText()));
-                registerDB.update(DBRegisterContract.DBRegisterEntry.TABLE_NAME, values, DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
+                values.put(DBContract.DBEntry.COLUMN_NAME, String.valueOf(name.getText()));
+                registerDB.update(DBContract.DBEntry.TABLE_NAMEREGISTER, values, DBContract.DBEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
                 registerDB.close();
-                DBLogHelper mdbLogHelper = new DBLogHelper(getContext());
-                SQLiteDatabase logDB = mdbLogHelper.getWritableDatabase();
+                DBHelper mdbHelper = new DBHelper(getContext());
+                SQLiteDatabase logDB = mdbHelper.getWritableDatabase();
                 ContentValues nameValue = new ContentValues();
-                nameValue.put(DBLogContract.DBLogEntry.COLUMN_NAME, String.valueOf(name.getText()));
-                logDB.update(DBLogContract.DBLogEntry.TABLE_NAME, nameValue, DBLogContract.DBLogEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
+                nameValue.put(DBContract.DBEntry.COLUMN_NAME, String.valueOf(name.getText()));
+                logDB.update(DBContract.DBEntry.TABLE_NAMENFCLOG, nameValue, DBContract.DBEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
                 logDB.close();
                 Toast.makeText(getActivity(), R.string.savedNewName, Toast.LENGTH_LONG).show();
             }
@@ -227,13 +225,13 @@ public class Frag_NFCRegister extends Fragment {
 
         tl.addView(headerRow);
 
-        DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getContext());
+        DBHelper mDbRegisterHelper = new DBHelper(getContext());
         SQLiteDatabase db = mDbRegisterHelper.getReadableDatabase();
         //Sort chronologically by ID, newest first
-        String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
+        String sortOrder = DBContract.DBEntry.COLUMN_NFCID + " DESC";
         //get all entries
         Cursor cursor = db.query(
-                DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
+                DBContract.DBEntry.TABLE_NAMEREGISTER,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
                 null,              // The columns for the WHERE clause
                 null,          // The values for the WHERE clause
@@ -246,9 +244,9 @@ public class Frag_NFCRegister extends Fragment {
         List<String> names = new ArrayList<>();
         List<String> nfcIds = new ArrayList<>();
         while(cursor.moveToNext()) {
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NAME));
             names.add(name);
-            String id = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NFCID));
+            String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
             nfcIds.add(id);
         }
         cursor.close();

@@ -35,17 +35,15 @@ public class DBSyncService extends IntentService {
 
         if (mWifi.isConnected()) {
             Log.d(LOGTAG, "WIFI connected");
-            final String LOGDB = getApplicationContext().getDatabasePath(DBLogHelper.DATABASE_NAME).getAbsolutePath();
-            final String REGISTERDB = getApplicationContext().getDatabasePath(DBRegisterHelper.DATABASE_NAME).getAbsolutePath();
-            uploadFile(LOGDB, DBLogContract.DBLogEntry.TABLE_NAME);
-            uploadFile(REGISTERDB, DBRegisterContract.DBRegisterEntry.TABLE_NAME);
+            final String LOGDB = getApplicationContext().getDatabasePath(DBHelper.DATABASE_NAME).getAbsolutePath();
+            uploadFile(LOGDB);
         } else {
             Log.d(LOGTAG, "WIFI not connected");
         }
     }
 
 
-    public int uploadFile(String sourceFileUri, String tableName) {
+    public int uploadFile(String sourceFileUri) {
 
 
         String fileName = sourceFileUri;
@@ -66,10 +64,9 @@ public class DBSyncService extends IntentService {
                     +sourceFileUri);
             return 0;
 
-        }
-        else
-        {
+        } else {
             int serverResponseCode = 0;
+            Log.d(LOGTAG, "Starting upload");
             try {
 
                 // open a URL connection to the Servlet
@@ -93,6 +90,7 @@ public class DBSyncService extends IntentService {
                 SharedPreferences prefs = getApplication().getSharedPreferences(Frag_Settings.PARTICIPANTIDSHARED, MODE_PRIVATE);
                 String token =  prefs.getString(Frag_Settings.PARTICIPANTIDKEY, "-1");
                 if (token.equals("-1")) {
+                    Log.d(LOGTAG, "No participant ID");
                     return 0;
                 }
                 dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\"; filename=\""
@@ -117,6 +115,7 @@ public class DBSyncService extends IntentService {
                     bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 
                 }
+                Log.d(LOGTAG, "File sent");
 
                 // send multipart form data necesssary after file data...
                 dos.writeBytes(lineEnd);

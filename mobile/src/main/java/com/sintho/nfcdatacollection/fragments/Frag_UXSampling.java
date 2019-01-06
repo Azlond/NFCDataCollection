@@ -3,6 +3,7 @@ package com.sintho.nfcdatacollection.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -30,8 +31,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sintho.nfcdatacollection.R;
-import com.sintho.nfcdatacollection.db.DBRegisterContract;
-import com.sintho.nfcdatacollection.db.DBRegisterHelper;
+import com.sintho.nfcdatacollection.db.DBContract;
+import com.sintho.nfcdatacollection.db.DBHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,6 +49,8 @@ public class Frag_UXSampling extends Fragment {
     private ArrayList<CheckBox> checkBoxes;
     private final String NAMES = "names";
     private final String IDS = "ids";
+    private final String CURSOR = "cursor";
+    private final String DB = "db";
     public Frag_UXSampling() {
         // Required empty public constructor
     }
@@ -71,7 +74,18 @@ public class Frag_UXSampling extends Fragment {
                 DatePickerDialog mDatePicker=new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
                     @SuppressLint("DefaultLocale")
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                        dateView.setText(String.format("%d/%d/%d", selectedday, selectedmonth + 1, selectedyear));
+                        dateView.setText(String.format("%d-%d-%d", selectedyear, selectedmonth + 1, selectedday));
+                        Log.d(LOGTAG, "Setting new Date");
+                        HashMap<String, Object> map = readPreviousEntries();
+                        Cursor cursor = (Cursor) map.get(CURSOR);
+                        try {
+                            createLayout(v);
+                        } finally {
+                            cursor.close();
+                            SQLiteDatabase db = (SQLiteDatabase) map.get(DB);
+                            db.close();
+
+                        }
                     }
                 },mYear, mMonth, mDay);
                 mDatePicker.setTitle("Select date");
@@ -79,18 +93,20 @@ public class Frag_UXSampling extends Fragment {
             }
         };
 
-
-        dateView.setText(String.format("%d/%d/%d", mDay, mMonth, mYear));
+        dateView.setText(String.format("%d-%d-%d", mYear, mMonth, mDay));
         dateView.setOnClickListener(onClickListener);
         v.findViewById(R.id.editTextView).setOnClickListener(onClickListener);
+        createLayout(v);
+        return v;
+    }
 
+    private void createLayout(View v) {
         FrameLayout frameLayout = (FrameLayout) v.findViewById(R.id.UXSamplingFrameLayout);
         TableLayout tableLayout = fillUXSampling();
-        frameLayout.removeAllViewsInLayout();
+        frameLayout.removeAllViews();
         ScrollView scrollView = new ScrollView(getContext());
         scrollView.addView(tableLayout);
         frameLayout.addView(scrollView);
-
 
         UXNotes = (EditText) v.findViewById(R.id.UXNotesEditText);
         UXNotes.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -99,12 +115,27 @@ public class Frag_UXSampling extends Fragment {
             public void onFocusChange(View view, boolean hasFocus) {
                 if (!hasFocus) {
                     InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(UXNotes.getWindowToken(), 0);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(UXNotes.getWindowToken(), 0);
+                    }
 
                 }
             }
         });
+        HashMap<String, Object> map = readPreviousEntries();
+        Cursor cursor = (Cursor) map.get(CURSOR);
+        try {
 
+            if (cursor.getCount() != 0 && cursor.moveToFirst()) {
+                UXNotes.setText(cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_TEXT)));
+            } else {
+                UXNotes.setText("");
+            }
+        } finally {
+            cursor.close();
+            SQLiteDatabase db = (SQLiteDatabase) map.get(DB);
+            db.close();
+        }
 
         v.findViewById(R.id.UXSamplingSaveButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,20 +145,36 @@ public class Frag_UXSampling extends Fragment {
                 List<String> nfcIds = map.get(IDS);
                 List<String> names = map.get(NAMES);
 
+                StringBuilder data = new StringBuilder();
+
                 for (int i = 0; i < nfcIds.size(); i++) {
-                    String id = nfcIds.get(i);
+                    String nfcID = nfcIds.get(i);
                     String name = names.get(i);
                     boolean checked = checkBoxes.get(i).isChecked();
+                    data.append(String.format("%s/%s: %b\n", nfcID, name, checked));
                 }
 
                 String notes = String.valueOf(UXNotes.getText());
+                DBHelper mDbHelper = new DBHelper(getContext());
+                SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
+                ContentValues values = new ContentValues();
+                values.put(DBContract.DBEntry.COLUMN_DATE, String.valueOf(dateView.getText()));
+                values.put(DBContract.DBEntry.COLUMN_TEXT, notes);
+                values.put(DBContract.DBEntry.COLUMN_DATA, data.toString().toString());
+
+                long newRowId = db.replace(DBContract.DBEntry.TABLE_UXSAMPLING, null, values);
+                if (newRowId == -1) {
+                    try {
+                        throw new Exception(String.format("row not inserted: %d", newRowId));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 Toast.makeText(getActivity(), "Successfully saved", Toast.LENGTH_LONG).show();
             }
         });
-
-        return v;
     }
 
     /**
@@ -163,11 +210,12 @@ public class Frag_UXSampling extends Fragment {
         return  textView;
     }
 
-    private CheckBox createCheckBox(int width) {
+    private CheckBox createCheckBox(int width, boolean checked) {
         CheckBox checkBox = new CheckBox(getContext());
         checkBox.setEnabled(true);
         checkBox.setMaxWidth(width);
         checkBox.setWidth(width);
+        checkBox.setChecked(checked);
         return checkBox;
     }
 
@@ -199,6 +247,28 @@ public class Frag_UXSampling extends Fragment {
          * otherwise, show a default note
          */
         Log.d(LOGTAG, "adding content to table layout");
+
+        HashMap<String, Object> hashMap = new HashMap<>();
+
+        HashMap<String, Object> dbMap = readPreviousEntries();
+        Cursor cursor = (Cursor) dbMap.get(CURSOR);
+        try {
+            if (cursor.getCount() != 0 && cursor.moveToFirst()) {
+                String data = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_DATA));
+                String[] elements = data.split("\n");
+                for (String part: elements) {
+                    String[] parts = part.split("/");
+                    String id = parts[0];
+                    Boolean checked = parts[1].substring(parts[1].length() - 4).equals("true");
+                    hashMap.put(id, checked);
+                }
+            }
+        } finally {
+            cursor.close();
+            SQLiteDatabase db = (SQLiteDatabase) dbMap.get(DB);
+            db.close();
+        }
+
         checkBoxes = new ArrayList<>();
         if (nfcIds.size() > 0) {
             for (int i = 0; i < nfcIds.size(); i++) {
@@ -208,7 +278,8 @@ public class Frag_UXSampling extends Fragment {
 
                 TextView nfcName = createTableRowView(names.get(i), width * 2/5);
                 tr.addView(nfcName);
-                CheckBox checkBox = createCheckBox(width / 5);
+                boolean checked = hashMap.containsKey(String.valueOf(nfcID.getText())) && (boolean) hashMap.get(String.valueOf(nfcID.getText()));
+                CheckBox checkBox = createCheckBox(width / 5, checked);
                 tr.addView(checkBox);
                 checkBoxes.add(i, checkBox);
                 tl.addView(tr);
@@ -217,14 +288,34 @@ public class Frag_UXSampling extends Fragment {
         return tl;
     }
 
+    private HashMap<String, Object> readPreviousEntries() {
+        DBHelper mDbHelper = new DBHelper(getContext());
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        String sortOrder = DBContract.DBEntry.COLUMN_DATE + " DESC";
+        Log.d(LOGTAG, "Retrieving values from" + String.valueOf(dateView.getText()));
+        Cursor cursor = db.query(
+                DBContract.DBEntry.TABLE_UXSAMPLING,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                DBContract.DBEntry.COLUMN_DATE + " = ?",              // The columns for the WHERE clause
+                new String[]{String.valueOf(dateView.getText())},          // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                sortOrder               // The sort order
+        );
+        HashMap<String, Object> map = new HashMap<>();
+        map.put(CURSOR, cursor);
+        map.put(DB, db);
+        return map;
+    }
+
     private HashMap<String, List<String>> getIDsAndNames() {
-        DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getContext());
+        DBHelper mDbRegisterHelper = new DBHelper(getContext());
         SQLiteDatabase db = mDbRegisterHelper.getReadableDatabase();
         //Sort chronologically by ID, newest first
-        String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
+        String sortOrder = DBContract.DBEntry.COLUMN_NFCID + " DESC";
         //get all entries
         Cursor cursor = db.query(
-                DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
+                DBContract.DBEntry.TABLE_NAMEREGISTER,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
                 null,              // The columns for the WHERE clause
                 null,          // The values for the WHERE clause
@@ -237,9 +328,9 @@ public class Frag_UXSampling extends Fragment {
         List<String> names = new ArrayList<>();
         List<String> nfcIds = new ArrayList<>();
         while(cursor.moveToNext()) {
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NAME));
             names.add(name);
-            String id = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NFCID));
+            String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
             nfcIds.add(id);
         }
         cursor.close();

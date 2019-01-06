@@ -12,10 +12,8 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.sintho.nfcdatacollection.Notifications;
 import com.sintho.nfcdatacollection.R;
-import com.sintho.nfcdatacollection.db.DBLogContract;
-import com.sintho.nfcdatacollection.db.DBLogHelper;
-import com.sintho.nfcdatacollection.db.DBRegisterContract;
-import com.sintho.nfcdatacollection.db.DBRegisterHelper;
+import com.sintho.nfcdatacollection.db.DBContract;
+import com.sintho.nfcdatacollection.db.DBHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,15 +54,15 @@ public class ReceiverService extends WearableListenerService {
             }
             Log.d(LOGTAG, String.format("gotTag: %s; with date %s; entry # %d", nfcID, date, id));
 
-            DBLogHelper mDbLogHelper = new DBLogHelper(getApplicationContext());
-            SQLiteDatabase db = mDbLogHelper.getWritableDatabase();
-            SQLiteDatabase dbRead = mDbLogHelper.getReadableDatabase();
-            String sortOrder = DBLogContract.DBLogEntry.COLUMN_ID + " DESC";
+            DBHelper mDbHelper = new DBHelper(getApplicationContext());
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
+            String sortOrder = DBContract.DBEntry.COLUMN_ID + " DESC";
 
             Cursor cursor = dbRead.query(
-                    DBLogContract.DBLogEntry.TABLE_NAME,   // The table to query
+                    DBContract.DBEntry.TABLE_NAMENFCLOG,   // The table to query
                     null,             // The array of columns to return (pass null to get all)
-                    DBLogContract.DBLogEntry.COLUMN_ID + " = ?",              // The columns for the WHERE clause
+                    DBContract.DBEntry.COLUMN_ID + " = ?",              // The columns for the WHERE clause
                     new String[]{String.valueOf(id)},          // The values for the WHERE clause
                     null,                   // don't group the rows
                     null,                   // don't filter by row groups
@@ -74,23 +72,23 @@ public class ReceiverService extends WearableListenerService {
                 if (cursor.getCount() == 0) {
                     Log.d(LOGTAG, "new entry for db");
                     ContentValues values = new ContentValues();
-                    values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
+                    values.put(DBContract.DBEntry.COLUMN_NFCID, nfcID);
 
                     Cursor cursor2 = getNameCursorFromDB(nfcID);
 
                     if (cursor2.getCount() > 0) {
                         cursor2.moveToFirst();
-                        String name = cursor2.getString(cursor2.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
-                        values.put(DBLogContract.DBLogEntry.COLUMN_NAME, name);
+                        String name = cursor2.getString(cursor2.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NAME));
+                        values.put(DBContract.DBEntry.COLUMN_NAME, name);
                     } else {
-                        values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
+                        values.put(DBContract.DBEntry.COLUMN_NAME, "");
                         addToRegister(nfcID);
                     }
                     cursor2.close();
-                    values.put(DBLogContract.DBLogEntry.COLUMN_DATE, date);
-                    values.put(DBLogContract.DBLogEntry.COLUMN_ID, id);
+                    values.put(DBContract.DBEntry.COLUMN_DATE, date);
+                    values.put(DBContract.DBEntry.COLUMN_ID, id);
 
-                    long newRowId = db.insert(DBLogContract.DBLogEntry.TABLE_NAME, null, values);
+                    long newRowId = db.insert(DBContract.DBEntry.TABLE_NAMENFCLOG, null, values);
                     if (newRowId == -1) {
                         try {
                             throw new Exception(String.format("row not inserted: %d", newRowId));
@@ -132,7 +130,7 @@ public class ReceiverService extends WearableListenerService {
             String name = "";
             if (cursor.getCount() > 0) {
                 cursor.moveToFirst();
-                name = cursor.getString(cursor.getColumnIndexOrThrow(DBRegisterContract.DBRegisterEntry.COLUMN_NAME));
+                name = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NAME));
             }
             cursor.close();
 //            Intent intent = new Intent(getApplicationContext(), Navigation.class);
@@ -173,13 +171,13 @@ public class ReceiverService extends WearableListenerService {
      * @return
      */
     private Cursor getNameCursorFromDB(String nfcID) {
-        DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
+        DBHelper mDbRegisterHelper = new DBHelper(getApplicationContext());
         SQLiteDatabase dbNames = mDbRegisterHelper.getReadableDatabase();
-        String sortOrder = DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " DESC";
+        String sortOrder = DBContract.DBEntry.COLUMN_NFCID + " DESC";
         return dbNames.query(
-                DBRegisterContract.DBRegisterEntry.TABLE_NAME,   // The table to query
+                DBContract.DBEntry.TABLE_NAMEREGISTER,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
-                DBRegisterContract.DBRegisterEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
+                DBContract.DBEntry.COLUMN_NFCID + " = ?",              // The columns for the WHERE clause
                 new String[]{nfcID},          // The values for the WHERE clause
                 null,                   // don't group the rows
                 null,                   // don't filter by row groups
@@ -192,14 +190,14 @@ public class ReceiverService extends WearableListenerService {
      * @param nfcID
      */
     private void addToRegister(String nfcID) {
-        DBRegisterHelper mDbRegisterHelper = new DBRegisterHelper(getApplicationContext());
+        DBHelper mDbRegisterHelper = new DBHelper(getApplicationContext());
         SQLiteDatabase db = mDbRegisterHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(DBLogContract.DBLogEntry.COLUMN_NFCID, nfcID);
-        values.put(DBLogContract.DBLogEntry.COLUMN_NAME, "");
+        values.put(DBContract.DBEntry.COLUMN_NFCID, nfcID);
+        values.put(DBContract.DBEntry.COLUMN_NAME, "");
 
-        long newRowId = db.insert(DBRegisterContract.DBRegisterEntry.TABLE_NAME, null, values);
+        long newRowId = db.insert(DBContract.DBEntry.TABLE_NAMEREGISTER, null, values);
         if (newRowId == -1) {
             try {
                 throw new Exception(String.format("row not inserted: %d", newRowId));

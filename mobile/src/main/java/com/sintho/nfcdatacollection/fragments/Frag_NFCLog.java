@@ -27,8 +27,8 @@ import android.widget.TextView;
 
 import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.communication.ReceiverService;
-import com.sintho.nfcdatacollection.db.DBLogContract;
-import com.sintho.nfcdatacollection.db.DBLogHelper;
+import com.sintho.nfcdatacollection.db.DBContract;
+import com.sintho.nfcdatacollection.db.DBHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,13 +156,13 @@ public class Frag_NFCLog extends Fragment {
 
         tl.addView(headerRow);
 
-        DBLogHelper mDbLogHelper = new DBLogHelper(getContext());
-        SQLiteDatabase db = mDbLogHelper.getReadableDatabase();
+        DBHelper mDbHelper = new DBHelper(getContext());
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
         //Sort chronologically by ID, newest first
-        String sortOrder = DBLogContract.DBLogEntry.COLUMN_ID+ " DESC";
+        String sortOrder = DBContract.DBEntry.COLUMN_ID+ " DESC";
         //get all entries
         Cursor cursor = db.query(
-                DBLogContract.DBLogEntry.TABLE_NAME,   // The table to query
+                DBContract.DBEntry.TABLE_NAMENFCLOG,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
                 null,              // The columns for the WHERE clause
                 null,          // The values for the WHERE clause
@@ -178,13 +178,13 @@ public class Frag_NFCLog extends Fragment {
         List<String> nfcIds = new ArrayList<>();
         while(cursor.moveToNext()) {
             long itemId = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DBLogContract.DBLogEntry.COLUMN_ID));
+                    cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_ID));
             itemIds.add(itemId);
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DBLogContract.DBLogEntry.COLUMN_NAME));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NAME));
             names.add(name);
-            String date = cursor.getString(cursor.getColumnIndexOrThrow(DBLogContract.DBLogEntry.COLUMN_DATE));
+            String date = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_DATE));
             dates.add(date);
-            String id = cursor.getString(cursor.getColumnIndexOrThrow(DBLogContract.DBLogEntry.COLUMN_NFCID));
+            String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
             nfcIds.add(id);
         }
         cursor.close();
