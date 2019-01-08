@@ -235,7 +235,7 @@ public class Frag_UXSampling extends Fragment {
 
         headerRow.addView(createTableHeaderView(R.string.id, width * 4/5, 0));
         headerRow.addView(createTableHeaderView(R.string.name, width * 2/5, 25));
-        headerRow.addView(createTableHeaderView(R.string.save, width / 5, 25));
+        headerRow.addView(createTableHeaderView(R.string.forgotten, width / 5, 25));
 
         tl.addView(headerRow);
 

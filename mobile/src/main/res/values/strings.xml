@@ -37,4 +37,5 @@
     <string name="ux_sampling">UX Sampling</string>
     <string name="date_will_be_displayed_here">Date will be displayed here</string>
     <string name="enter_any_notes_you_have_about_today_here">Enter any notes you have about today here</string>
+    <string name="forgotten">Forgotten</string>
 </resources>
