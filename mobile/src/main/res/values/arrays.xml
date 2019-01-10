@@ -3,9 +3,9 @@
     <array name="nav_names">
         <item>Log</item>
         <item>Register</item>
-        <item>Contact</item>
-        <item>Feedback</item>
-        <item>Settings</item>
+        <!--<item>Feedback</item>-->
         <item>UX Sampling</item>
+        <item>Settings</item>
+        <item>Contact</item>
     </array>
 </resources>

@@ -89,6 +89,14 @@
                 <action android:name="com.sintho.nfcdatacollection.SYNC_SERVICE" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".reminders.ReminderReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <service
+            android:name=".reminders.ReminderService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

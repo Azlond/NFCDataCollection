@@ -1,6 +1,9 @@
 package com.sintho.nfcdatacollection;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,7 +37,11 @@ import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 import com.sintho.nfcdatacollection.fragments.Frag_Settings;
 import com.sintho.nfcdatacollection.fragments.Frag_UXSampling;
+import com.sintho.nfcdatacollection.reminders.ReminderReceiver;
+import com.sintho.nfcdatacollection.reminders.ReminderService;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class Navigation extends AppCompatActivity implements NodeApi.NodeListener {
@@ -121,6 +128,26 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
 
         Intent i1 = new Intent("com.sintho.nfcdatacollection.SYNC_SERVICE");
         sendBroadcast(i1);
+
+        //create reminders for UX Sampling
+        Calendar cur_cal = new GregorianCalendar();
+        cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
+
+        Calendar cal = new GregorianCalendar();
+        cal.add(Calendar.DAY_OF_YEAR, cur_cal.get(Calendar.DAY_OF_YEAR));
+        cal.set(Calendar.HOUR_OF_DAY, 22);
+        cal.set(Calendar.MINUTE, 00);
+        cal.set(Calendar.SECOND, cur_cal.get(Calendar.SECOND));
+        cal.set(Calendar.MILLISECOND, cur_cal.get(Calendar.MILLISECOND));
+        cal.set(Calendar.DATE, cur_cal.get(Calendar.DATE));
+        cal.set(Calendar.MONTH, cur_cal.get(Calendar.MONTH));
+
+        Intent notifyIntent = new Intent(this, ReminderReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast
+                (getApplicationContext(), 1017, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,  cal.getTimeInMillis(),
+                1000 * 60 * 60 * 24, pendingIntent);
     }
 
     @Override
@@ -225,13 +252,13 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
             case 1:
                 return new Frag_NFCRegister();
             case 2:
-                return new Frag_Contact();
-            case 3:
-                return new Frag_Feedback();
-            case 4:
-                return new Frag_Settings();
-            case 5:
                 return new Frag_UXSampling();
+            case 3:
+                return new Frag_Settings();
+            case 4:
+                return new Frag_Contact();
+//            case 5:
+//                return new Frag_Feedback();
             default:
                 return new Frag_NFCLog();
         }
@@ -265,22 +292,22 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                         navItemIndex = 1;
                         CURRENT_TAG = TAG_REGISTER;
                         break;
-                    case R.id.nav_contact:
-                        navItemIndex = 2;
-                        CURRENT_TAG = TAG_CONTACT;
-                        break;
-                    case R.id.nav_feedback:
-                        navItemIndex = 3;
-                        CURRENT_TAG = TAG_FEEDBACK;
-                        break;
-                    case R.id.nav_settings:
-                        navItemIndex = 4;
-                        CURRENT_TAG = TAG_SETTINGS;
-                        break;
                     case R.id.nav_uxsampling:
-                        navItemIndex = 5;
+                        navItemIndex = 2;
                         CURRENT_TAG = TAG_UXSAMPLING;
                         break;
+                    case R.id.nav_settings:
+                        navItemIndex = 3;
+                        CURRENT_TAG = TAG_SETTINGS;
+                        break;
+                    case R.id.nav_contact:
+                        navItemIndex = 4;
+                        CURRENT_TAG = TAG_CONTACT;
+                        break;
+//                    case R.id.nav_feedback:
+//                        navItemIndex = 3;
+//                        CURRENT_TAG = TAG_FEEDBACK;
+//                        break;
                     default:
                         navItemIndex = 0;
                 }
