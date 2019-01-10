@@ -35,7 +35,7 @@ public class ReceiverActivity extends Activity {
         if (tag != null) {
             //Vibrate subtly to indicate tag scanned
             //noinspection ConstantConditions
-            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(75);
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(100);
 
             if (Scanning.scanning) {
                 Intent forwardingIntent = new Intent(this, TransmitService.class);
