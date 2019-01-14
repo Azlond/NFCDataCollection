@@ -136,9 +136,9 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
         Calendar cal = new GregorianCalendar();
         cal.add(Calendar.DAY_OF_YEAR, cur_cal.get(Calendar.DAY_OF_YEAR));
         cal.set(Calendar.HOUR_OF_DAY, 22);
-        cal.set(Calendar.MINUTE, 00);
-        cal.set(Calendar.SECOND, cur_cal.get(Calendar.SECOND));
-        cal.set(Calendar.MILLISECOND, cur_cal.get(Calendar.MILLISECOND));
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         cal.set(Calendar.DATE, cur_cal.get(Calendar.DATE));
         cal.set(Calendar.MONTH, cur_cal.get(Calendar.MONTH));
 
@@ -148,6 +148,7 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
         AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,  cal.getTimeInMillis(),
                 1000 * 60 * 60 * 24, pendingIntent);
+        Log.d(LOGTAG, "Daily notification registered");
     }
 
     @Override
