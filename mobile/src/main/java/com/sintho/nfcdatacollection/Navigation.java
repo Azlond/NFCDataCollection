@@ -32,13 +32,11 @@ import com.sintho.nfcdatacollection.fcm.NotificationsListenerService;
 import com.sintho.nfcdatacollection.fcm.RegistrationService;
 import com.sintho.nfcdatacollection.communication.TransmitService;
 import com.sintho.nfcdatacollection.fragments.Frag_Contact;
-import com.sintho.nfcdatacollection.fragments.Frag_Feedback;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCLog;
 import com.sintho.nfcdatacollection.fragments.Frag_NFCRegister;
 import com.sintho.nfcdatacollection.fragments.Frag_Settings;
 import com.sintho.nfcdatacollection.fragments.Frag_UXSampling;
 import com.sintho.nfcdatacollection.reminders.ReminderReceiver;
-import com.sintho.nfcdatacollection.reminders.ReminderService;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -129,7 +127,7 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
         Intent i1 = new Intent("com.sintho.nfcdatacollection.SYNC_SERVICE");
         sendBroadcast(i1);
 
-        //create reminders for UX Sampling
+        //create reminders for Feedback
         Calendar cur_cal = new GregorianCalendar();
         cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
 

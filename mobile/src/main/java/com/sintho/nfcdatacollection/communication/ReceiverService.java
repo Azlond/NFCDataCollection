@@ -135,9 +135,9 @@ public class ReceiverService extends WearableListenerService {
             cursor.close();
 //            Intent intent = new Intent(getApplicationContext(), Navigation.class);
 //            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), String.format("ID %s has already been registered with name %s", nfcID, name), null, Notification.PRIORITY_HIGH);
+            Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), (getString(R.string.notification_tagID).replace("replacement1", nfcID).replace("replacement2", name)), null, Notification.PRIORITY_HIGH);
         } else if (messageEvent.getPath().equals(BATTERYNOTIFICATION)) {
-            Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), "The battery level of your smart watch has dropped below 50%.", null, Notification.PRIORITY_HIGH);
+            Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), getString(R.string.notification_battery), null, Notification.PRIORITY_HIGH);
         }
     }
 

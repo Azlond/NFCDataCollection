@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">NFCDataCollection</string>
+    <string name="app_name">Smart Home Study</string>
     <string name="nav_log">Log</string>
     <string name="nav_register">Register</string>
-    <string name="nav_header_title">NFC Data Collection</string>
+    <string name="nav_header_title">Smart Home Study</string>
     <string name="nav_contact">Contact</string>
     <string name="nav_feedback">Feedback</string>
     <string name="nav_settings">Settings</string>
@@ -34,9 +34,21 @@
     <string name="locationButton">Set home location</string>
     <string name="locationCheckbox">Receive location reminders for Smartwatch</string>
     <string name="enter_participant_id">Enter participant ID</string>
-    <string name="ux_sampling">UX Sampling</string>
+    <string name="ux_sampling">Feedback</string>
     <string name="date_will_be_displayed_here">Date will be displayed here</string>
     <string name="enter_any_notes_you_have_about_today_here">Enter any notes you have about today here</string>
     <string name="forgotten">Forgotten</string>
     <string name="Contact_Information">If you have any questions regarding the study, feel free to contact us at jan.kaiser@campus.lmu.de</string>
+
+    <string name="feedback_reminder">Missed a tag today? Don\'t forget to log it under Feedback. Thanks!</string>
+
+    <string name="notification_battery">The battery level of your smartwatch has dropped below 50%.</string>
+    <string name="notification_missingLocation">No location found. Please use the \"Set home location\" button.</string>
+    <string name="notification_missingPermission">Missing permission for ACCESS_FINE_LOCATION</string>
+    <string name="notification_highAccuracy">High accuracy needs to be enabled in settings-location-mode. Please try again after enabling.</string>
+    <string name="toast_successSave">Successfully saved</string>
+    <string name="notification_geoReminder">Entering home area. Don\'t forget your smart watch</string>
+
+    <string name="notification_tagID">ID replacement1 currently has the name: replacement2</string>
+
 </resources>

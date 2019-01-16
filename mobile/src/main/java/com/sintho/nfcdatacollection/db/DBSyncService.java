@@ -30,10 +30,10 @@ public class DBSyncService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
-        if (mWifi.isConnected()) {
+        if (activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
             Log.d(LOGTAG, "WIFI connected");
             final String LOGDB = getApplicationContext().getDatabasePath(DBHelper.DATABASE_NAME).getAbsolutePath();
             uploadFile(LOGDB);

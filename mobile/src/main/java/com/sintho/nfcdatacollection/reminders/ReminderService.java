@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.Context;
 
 import com.sintho.nfcdatacollection.Notifications;
+import com.sintho.nfcdatacollection.R;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -18,6 +19,6 @@ public class ReminderService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Notifications.sendNotification(getApplicationContext(), "NFC Study", "Missed a tag today? Don't forget to log it under UX Sampling. Thanks!", null, Notification.PRIORITY_MAX);
+        Notifications.sendNotification(getApplicationContext(), "NFC Study", getString(R.string.feedback_reminder), null, Notification.PRIORITY_MAX);
     }
 }

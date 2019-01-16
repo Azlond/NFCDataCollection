@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Smart Home Study</string>
+    <string name="nav_log">Protokoll</string>
+    <string name="nav_register">Registrierung</string>
+    <string name="nav_header_title">Smart Home Study</string>
+    <string name="nav_contact">Kontakt</string>
+    <string name="nav_feedback">Feedback</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="title_activity_navigation">Navigation</string>
+    <string name="navigation_drawer_open">Navigation öffnen</string>
+    <string name="navigation_drawer_close">Navigation schließen</string>
+    <string name="nav_header_subtitle">jan.kaiser@campus.lmu.de</string>
+    <string name="nav_header_desc">Navigationsheader</string>
+    <string name="openDrawer">Öffnen</string>
+    <string name="closeDrawer">Schließen</string>
+    <string name="savedNewName">Neuer Name wurde gespeichert</string>
+
+    <string name="date">Datum</string>
+    <string name="name">Name</string>
+    <string name="id">ID</string>
+    <string name="save">Speichern</string>
+    <string name="tableValueMissingID">Die ID des Tags wird hier angezeigt werden</string>
+    <string name="tableValueMissingName">Der Name des Tags wird hier angezeigt werden</string>
+    <string name="tableValueMissingDate">Das Datum des Scanprozesses wird hier angezeigt werden</string>
+
+    <string name="sync">Sync</string>
+    <string name="connected">Verbunden</string>
+
+    <string name="locationButton">Heimatskoordinaten speichern</string>
+    <string name="locationCheckbox">Ortsbasierte Erinnerungen für die Smartwatch erhalten</string>
+    <string name="enter_participant_id">Teilnehmer ID eintragen</string>
+    <string name="date_will_be_displayed_here">Das Datum wird heir angezeigt werden</string>
+    <string name="enter_any_notes_you_have_about_today_here">Notizen und Anmerkungen über den heutigen Tag</string>
+    <string name="forgotten">Vergessen</string>
+    <string name="Contact_Information">Bei Fragen und Feedback bitte jan.kaiser@campus.lmu.de kontaktieren</string>
+    <string name="feedback_reminder">Heute einen Tag vergesse? Bitte beim Feedback nicht vergessen. Danke!</string>
+    <string name="notification_tagID">ID replacement1 hat aktuell den Namen: replacement2</string>
+    <string name="notification_battery">Der Akki der Smartwatch ist unter 50% gefallen.</string>
+    <string name="notification_missingLocation">Standort fehlt. Bitte Button \"Heimatskoordinaten speichern\" verwenden.</string>
+    <string name="notification_missingPermission">Fehlende Berechtigung für ACCESS_FINE_LOCATION (genaue Standortbestimmung)</string>
+    <string name="notification_highAccuracy">Hohe Genauigkeit muss unter Einstellungen-Standort-Modus aktiviert sein. Bitte versuchen Sie nach dem Ändern der Einstellung erneut.</string>
+    <string name="toast_successSave">Erfolgreich gespeichert</string>
+    <string name="notification_geoReminder">Zuhause! Nicht die Smartwatch vergessen.</string>
+
+</resources>

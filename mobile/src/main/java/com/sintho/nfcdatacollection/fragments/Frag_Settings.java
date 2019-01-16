@@ -91,7 +91,7 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
                     Double longitude = Double.parseDouble(locPrefs.getString(LONGITUDE, "200.0"));
                     Double latitude = Double.parseDouble(locPrefs.getString(LATITUDE, "200.0"));
                     if (longitude.equals(200.0) || latitude.equals(200.0)) {
-                        Notifications.sendNotification(getContext(), getString(R.string.app_name), "No location found. Please use the \"Set home location\" button.", null, Notification.PRIORITY_MAX);
+                        Notifications.sendNotification(getContext(), getString(R.string.app_name), getString(R.string.notification_missingLocation), null, Notification.PRIORITY_MAX);
                     } else {
                         removeGeofence();
                         Location location = new Location("");
@@ -220,7 +220,7 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
     private void updateLocation() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(LOGTAG, "Missing permission for location");
-            Notifications.sendNotification(getContext(), getContext().getString(R.string.app_name), "Missing permission for ACCESS_FINE_LOCATION", null, Notification.PRIORITY_MAX);
+            Notifications.sendNotification(getContext(), getContext().getString(R.string.app_name), getString(R.string.notification_missingPermission), null, Notification.PRIORITY_MAX);
             return;
         }
         Location location = null;
@@ -292,7 +292,7 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
             if (status.getStatusCode() == 1000) {
                 Log.w(LOGTAG, "A higher location mode (Settings-Location-Mode) needs to be enabled");
                 Log.w(LOGTAG, "This might also have a different cause");
-                Notifications.sendNotification(getContext(), getString(R.string.app_name), "High accuracy needs to be enabled in settings-location-mode. Please try again after enabling.", null, Notification.PRIORITY_MAX);
+                Notifications.sendNotification(getContext(), getString(R.string.app_name), getString(R.string.notification_highAccuracy), null, Notification.PRIORITY_MAX);
             }
         }
     }

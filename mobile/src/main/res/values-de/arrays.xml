@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="nav_names">
-        <item>Log</item>
-        <item>Register</item>
+        <item>Protokoll</item>
+        <item>Registrierung</item>
         <!--<item>Feedback</item>-->
         <item>Feedback</item>
-        <item>Settings</item>
-        <item>Contact</item>
+        <item>Einstellungen</item>
+        <item>Kontakt</item>
     </array>
 </resources>

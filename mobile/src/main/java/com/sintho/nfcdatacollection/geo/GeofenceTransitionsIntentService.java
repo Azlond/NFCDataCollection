@@ -37,7 +37,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             Log.e(LOGTAG, "NullPointer location");
             return;
         }
-        Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), "Entering home area. Don't forget your smart watch", null, Notification.PRIORITY_MAX);
+        Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), getString(R.string.notification_geoReminder), null, Notification.PRIORITY_MAX);
     }
 
 }

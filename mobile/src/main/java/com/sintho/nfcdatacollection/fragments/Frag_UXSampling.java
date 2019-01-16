@@ -172,7 +172,7 @@ public class Frag_UXSampling extends Fragment {
                     }
                 }
 
-                Toast.makeText(getActivity(), "Successfully saved", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), R.string.toast_successSave, Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -27,7 +27,7 @@ public class autostart extends BroadcastReceiver {
             alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime(),
                     AlarmManager.INTERVAL_HALF_DAY, alarmIntent);
-            //create reminders for UX Sampling
+            //create reminders for Feeback
             Calendar cur_cal = new GregorianCalendar();
             cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
 

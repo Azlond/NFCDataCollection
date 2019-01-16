@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Smart Home Study</string>
+    <string name="get_tag_ID">Tag ID auslesen</string>
+    <string name="scan_now">Scanne Tag…</string>
+</resources>
