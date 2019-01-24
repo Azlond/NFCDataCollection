@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "773117675487",
+    "firebase_url": "https://nfcdatacollection-8a2cf.firebaseio.com",
+    "project_id": "nfcdatacollection-8a2cf",
+    "storage_bucket": "nfcdatacollection-8a2cf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773117675487:android:64c45390133ae8f7",
+        "android_client_info": {
+          "package_name": "com.sintho.smarthomestudy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "773117675487-redgu4eiluatnke1i3u90hmkc3trjqgp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD35vNoEPp5IXG6efN3D1Fc3IYGIe7Z8yU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
