@@ -24,12 +24,14 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sintho.nfcdatacollection.MaxHeightScrollView;
 import com.sintho.nfcdatacollection.R;
 import com.sintho.nfcdatacollection.db.DBContract;
 import com.sintho.nfcdatacollection.db.DBHelper;
@@ -104,7 +106,13 @@ public class Frag_UXSampling extends Fragment {
         FrameLayout frameLayout = (FrameLayout) v.findViewById(R.id.UXSamplingFrameLayout);
         TableLayout tableLayout = fillUXSampling();
         frameLayout.removeAllViews();
-        ScrollView scrollView = new ScrollView(getContext());
+//        ScrollView scrollView = new ScrollView(getContext());
+        MaxHeightScrollView scrollView = new MaxHeightScrollView(getContext());
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        final int height = size.y;
+        scrollView.setMaxHeight((height - 50) * 3/5);
         scrollView.addView(tableLayout);
         frameLayout.addView(scrollView);
 
