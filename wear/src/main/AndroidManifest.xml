@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.sintho.nfcdatacollection">
+    package="com.sintho.smarthomestudy">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -16,7 +16,7 @@
         android:theme="@android:style/Theme.DeviceDefault"
         tools:ignore="GoogleAppIndexingWarning">
         <meta-data android:name="com.google.android.wearable.standalone" android:value="false"/>
-        <activity android:name=".communication.ReceiverActivity">
+        <activity android:name="com.sintho.smarthomestudy.communication.ReceiverActivity">
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
@@ -30,14 +30,14 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".communication.TransmitService" />
-        <service android:name=".communication.ReceiverService">
+        <service android:name="com.sintho.smarthomestudy.communication.TransmitService" />
+        <service android:name="com.sintho.smarthomestudy.communication.ReceiverService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
         </service>
 
-        <activity android:name=".MainActivity">
+        <activity android:name="com.sintho.smarthomestudy.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,21 +46,21 @@
         </activity>
 
         <receiver
-            android:name=".communication.autostart"
+            android:name="com.sintho.smarthomestudy.communication.autostart"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="com.sintho.nfcdatacollection.SYNC_SERVICE" />
+                <action android:name="com.sintho.smarthomestudy.SYNC_SERVICE" />
             </intent-filter>
         </receiver>
 
         <service
-            android:name=".communication.Sync"
+            android:name="com.sintho.smarthomestudy.communication.Sync"
             android:enabled="true"
             android:exported="false"/>
 
-        <activity android:name=".Scanning" />
+        <activity android:name="com.sintho.smarthomestudy.Scanning" />
     </application>
 
 </manifest>

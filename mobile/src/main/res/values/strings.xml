@@ -16,7 +16,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="openDrawer">Open</string>
     <string name="closeDrawer">Close</string>
-    <string name="savedNewName">Successfully saved new name</string>
+    <string name="savedNewName">Successfully saved new name(s)</string>
 
     <string name="date">Date</string>
     <string name="name">Name</string>

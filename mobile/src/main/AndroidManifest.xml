@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.sintho.nfcdatacollection">
+    package="com.sintho.smarthomestudy">
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.NFC" />
@@ -11,10 +11,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <permission
-        android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE"
+        android:name="com.sintho.smarthomestudy.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.sintho.nfcdatacollection.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.sintho.smarthomestudy.permission.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
@@ -23,17 +23,18 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
-        <service android:name=".communication.ReceiverService">
+        <service android:name="com.sintho.smarthomestudy.communication.ReceiverService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
         </service>
-        <service android:name=".communication.TransmitService" />
+        <service android:name="com.sintho.smarthomestudy.communication.TransmitService" />
 
         <activity
-            android:name=".Navigation"
+            android:name="com.sintho.smarthomestudy.Navigation"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -48,54 +49,54 @@
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
 
-                <category android:name="com.sintho.nfcdatacollection" />
+                <category android:name="com.sintho.smarthomestudy" />
             </intent-filter>
         </receiver>
 
         <service
-            android:name=".fcm.RegistrationService"
+            android:name="com.sintho.smarthomestudy.fcm.RegistrationService"
             android:exported="false" />
         <service
-            android:name=".fcm.TokenRefreshListenerService"
+            android:name="com.sintho.smarthomestudy.fcm.TokenRefreshListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
         <service
-            android:name=".fcm.NotificationsListenerService"
+            android:name="com.sintho.smarthomestudy.fcm.NotificationsListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-        <service android:name=".geo.GeofenceTransitionsIntentService" />
+        <service android:name="com.sintho.smarthomestudy.geo.GeofenceTransitionsIntentService" />
 
         <receiver
-            android:name=".geo.GeoReceiver"
+            android:name="com.sintho.smarthomestudy.geo.GeoReceiver"
             android:process=":remote" />
 
         <service
-            android:name=".db.DBSyncService"
+            android:name="com.sintho.smarthomestudy.db.DBSyncService"
             android:enabled="true"
             android:exported="true" />
 
         <receiver
-            android:name=".communication.autostart"
+            android:name="com.sintho.smarthomestudy.communication.autostart"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="com.sintho.nfcdatacollection.SYNC_SERVICE" />
+                <action android:name="com.sintho.smarthomestudy.SYNC_SERVICE" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".reminders.ReminderReceiver"
+            android:name="com.sintho.smarthomestudy.reminders.ReminderReceiver"
             android:enabled="true"
             android:exported="true" />
 
         <service
-            android:name=".reminders.ReminderService"
+            android:name="com.sintho.smarthomestudy.reminders.ReminderService"
             android:exported="false"></service>
     </application>
 
