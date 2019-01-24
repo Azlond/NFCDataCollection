@@ -106,8 +106,8 @@ public class Frag_UXSampling extends Fragment {
         FrameLayout frameLayout = (FrameLayout) v.findViewById(R.id.UXSamplingFrameLayout);
         TableLayout tableLayout = fillUXSampling();
         frameLayout.removeAllViews();
-//        ScrollView scrollView = new ScrollView(getContext());
         MaxHeightScrollView scrollView = new MaxHeightScrollView(getContext());
+        scrollView.setScrollbarFadingEnabled(false);
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
