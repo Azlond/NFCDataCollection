@@ -36,6 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/enter_any_notes_you_have_about_today_here"
+        android:maxLines="2"
         android:layout_below="@id/UXSamplingFrameLayout"/>
     <Button
         android:id="@+id/UXSamplingSaveButton"
