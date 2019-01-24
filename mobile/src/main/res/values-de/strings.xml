@@ -15,7 +15,7 @@
     <string name="nav_header_desc">Navigationsheader</string>
     <string name="openDrawer">Öffnen</string>
     <string name="closeDrawer">Schließen</string>
-    <string name="savedNewName">Neuer Name wurde gespeichert</string>
+    <string name="savedNewName">Neue(r) Name(n) wurde(n) gespeichert</string>
 
     <string name="date">Datum</string>
     <string name="name">Name</string>

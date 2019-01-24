@@ -26,12 +26,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
+import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sintho.smarthomestudy.MaxHeightScrollView;
 import com.sintho.smarthomestudy.R;
 import com.sintho.smarthomestudy.communication.ReceiverService;
 import com.sintho.smarthomestudy.db.DBContract;
@@ -46,6 +47,10 @@ import java.util.List;
 public class Frag_NFCRegister extends Fragment {
     private static final String LOGTAG = Frag_NFCRegister.class.getName();
     private BroadcastReceiver receiver;
+
+    private ArrayList<EditText> editTextArrayList;
+    private ArrayList<TextView> textViewArrayList;
+    private Button saveButton;
     public Frag_NFCRegister() {
         // Required empty public constructor
     }
@@ -56,13 +61,20 @@ public class Frag_NFCRegister extends Fragment {
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                editTextArrayList = new ArrayList<>();
+                textViewArrayList = new ArrayList<>();
                 FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frameRegisterLayout);
                 if (frameLayout == null) {
                     throw new NullPointerException("Layout does not exist");
                 }
                 TableLayout tableLayout = fillRegister();
-                frameLayout.removeAllViewsInLayout();
-                ScrollView scrollView = new ScrollView(getContext());
+//                frameLayout.removeAllViews();
+                MaxHeightScrollView scrollView = new MaxHeightScrollView(getContext());
+                Display display = getActivity().getWindowManager().getDefaultDisplay();
+                Point size = new Point();
+                display.getSize(size);
+                final int height = size.y;
+                scrollView.setMaxHeight((height - 50) * 4 / 5);
                 scrollView.addView(tableLayout);
                 frameLayout.addView(scrollView);
             }
@@ -86,17 +98,59 @@ public class Frag_NFCRegister extends Fragment {
         }
     }
 
+    private void buttonOnClick() {
+        DBHelper mDbRegisterHelper = new DBHelper(getContext());
+        SQLiteDatabase registerDB = mDbRegisterHelper.getWritableDatabase();
+        DBHelper mdbHelper = new DBHelper(getContext());
+        SQLiteDatabase logDB = mdbHelper.getWritableDatabase();
+        for (int i = 0; i < editTextArrayList.size(); i++) {
+            EditText name = editTextArrayList.get(i);
+            TextView nfcID = textViewArrayList.get(i);
+            Log.d(LOGTAG, String.format("Clicked id %s with new name %s", nfcID.getText(), name.getText()));
+            //update id->name database
+            ContentValues values = new ContentValues();
+            values.put(DBContract.DBEntry.COLUMN_NAME, String.valueOf(name.getText()));
+            registerDB.update(DBContract.DBEntry.TABLE_NAMEREGISTER, values, DBContract.DBEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
+            ContentValues nameValue = new ContentValues();
+            nameValue.put(DBContract.DBEntry.COLUMN_NAME, String.valueOf(name.getText()));
+            logDB.update(DBContract.DBEntry.TABLE_NAMENFCLOG, nameValue, DBContract.DBEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
+        }
+        registerDB.close();
+        logDB.close();
+        Toast.makeText(getActivity(), R.string.savedNewName, Toast.LENGTH_LONG).show();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        FrameLayout frameLayout = (FrameLayout) inflater.inflate(R.layout.fragment_frag__nfcregister, container, false);
+        editTextArrayList = new ArrayList<>();
+        textViewArrayList = new ArrayList<>();
+        RelativeLayout relativeLayout= (RelativeLayout) inflater.inflate(R.layout.fragment_frag__nfcregister, container, false);
+        saveButton = (Button) relativeLayout.findViewById(R.id.registerSaveButton);
+        FrameLayout frameLayout = (FrameLayout) relativeLayout.findViewById(R.id.frameRegisterLayout);
+        relativeLayout.removeAllViews();
+//        frameLayout.removeAllViews();
         TableLayout tableLayout = fillRegister();
-        frameLayout.removeAllViewsInLayout();
-        ScrollView scrollView = new ScrollView(getContext());
+        MaxHeightScrollView scrollView = new MaxHeightScrollView(getContext());
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        final int height = size.y;
+        scrollView.setMaxHeight((height - 50) * 4 / 5);
         scrollView.addView(tableLayout);
         frameLayout.addView(scrollView);
-        return frameLayout;
+        saveButton.setText(R.string.save);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buttonOnClick();
+            }
+        });
+//        frameLayout.addView(saveButton);
+        relativeLayout.addView(frameLayout);
+        relativeLayout.addView(saveButton);
+        return relativeLayout;
     }
     /**
      * creates and styles the textviews for the column titles
@@ -127,7 +181,7 @@ public class Frag_NFCRegister extends Fragment {
         editText.setText(text);
         editText.setWidth(width);
         editText.setMaxWidth(width);
-        editText.setPadding(25,2,0,0);
+        editText.setPadding(25,2, 2,0);
         editText.setCursorVisible(false);
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
         editText.setSingleLine(true);
@@ -158,6 +212,7 @@ public class Frag_NFCRegister extends Fragment {
                 }
             }
         });
+        editTextArrayList.add(editText);
         return  editText;
     }
     /**
@@ -173,10 +228,11 @@ public class Frag_NFCRegister extends Fragment {
         textView.setWidth(width);
         textView.setMaxWidth(width);
         textView.setPadding(leftPadding,2,0,0);
+        textViewArrayList.add(textView);
         return  textView;
     }
 
-    private Button createSaveButton(boolean enabled, int width, final TextView nfcID, final EditText name) {
+    /*private Button createSaveButton(boolean enabled, int width, final TextView nfcID, final EditText name) {
         Button button = new Button(getContext());
         button.setText(R.string.save);
         button.setEnabled(enabled);
@@ -203,7 +259,7 @@ public class Frag_NFCRegister extends Fragment {
             }
         });
         return button;
-    }
+    }*/
 
     private TableLayout fillRegister() {
         //calculate display width
@@ -260,21 +316,21 @@ public class Frag_NFCRegister extends Fragment {
         if (nfcIds.size() > 0) {
             for (int i = 0; i < nfcIds.size(); i++) {
                 TableRow tr = new TableRow(getContext());
-                TextView nfcID = createTableRowView(nfcIds.get(i), width * 2/5, 0);
+                TextView nfcID = createTableRowView(nfcIds.get(i), width / 2 - 2, 2);
                 tr.addView(nfcID);
 
-                EditText nfcName = createTableRowEditText(names.get(i), width * 2/5);
+                EditText nfcName = createTableRowEditText(names.get(i), width / 2 - 2);
                 tr.addView(nfcName);
-                tr.addView(createSaveButton(true, width / 5, nfcID, nfcName));
+//                tr.addView(createSaveButton(true, width / 5, nfcID, nfcName));
                 tl.addView(tr);
             }
         } else {
             //Display a default note that this is where the Tag info will be displayed
             TableRow tr = new TableRow(getContext());
 
-            tr.addView(createTableRowView(getString(R.string.tableValueMissingID), width * 2/5, 0));
-            tr.addView(createTableRowView(getString(R.string.tableValueMissingName), width * 2/5, 25));
-            tr.addView(createSaveButton(false, width / 5, null, null));
+            tr.addView(createTableRowView(getString(R.string.tableValueMissingID), width / 2 - 2, 2));
+            tr.addView(createTableRowView(getString(R.string.tableValueMissingName), width / 2 - 25, 25));
+//            tr.addView(createSaveButton(false, width / 5, null, null));
 
             tl.addView(tr);
         }
