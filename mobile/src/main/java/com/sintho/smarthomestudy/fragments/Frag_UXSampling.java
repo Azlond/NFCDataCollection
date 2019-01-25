@@ -63,7 +63,7 @@ public class Frag_UXSampling extends Fragment {
         final View v = inflater.inflate(R.layout.fragment_frag__uxsampling, container, false);
         Calendar mcurrentDate=Calendar.getInstance();
         final int mYear = mcurrentDate.get(Calendar.YEAR);
-        final int mMonth = mcurrentDate.get(Calendar.MONTH) + 1;
+        final int mMonth = mcurrentDate.get(Calendar.MONTH);
         final int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
         dateView = (TextView) v.findViewById(R.id.dateTextView);
 
@@ -93,7 +93,7 @@ public class Frag_UXSampling extends Fragment {
             }
         };
 
-        dateView.setText(String.format("%d-%d-%d", mYear, mMonth, mDay));
+        dateView.setText(String.format("%d-%d-%d", mYear, mMonth + 1, mDay));
         dateView.setOnClickListener(onClickListener);
         v.findViewById(R.id.editTextView).setOnClickListener(onClickListener);
         createLayout(v);
