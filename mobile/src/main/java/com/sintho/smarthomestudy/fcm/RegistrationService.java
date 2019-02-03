@@ -27,6 +27,7 @@ public class RegistrationService extends IntentService {
             token = instanceID.getToken(this.getString(R.string.gcm_defaultSenderId), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
         Log.d(LOGTAG, "Token is: " + token);
         GcmPubSub subscription = GcmPubSub.getInstance(this);
