@@ -7,6 +7,9 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
+/**
+ * Scroll View with a max height to display other UI elements below it
+ */
 public class MaxHeightScrollView extends ScrollView {
 
     private int maxHeight;

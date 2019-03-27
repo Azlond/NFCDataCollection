@@ -10,37 +10,39 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.TextView;
 
-public class Scanning extends Activity {
-    private static final String LOGTAG = Scanning.class.getName();
-    public static boolean scanning = false;
-    public static final String ONFINISH = "onfinish";
+public class ScanningActivity extends Activity {
+    private static final String LOGTAG = ScanningActivity.class.getName();
+    public static boolean SCANNINGACTIVITY = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanning);
 
+        //Listen to events sent by the NFCScanReceiverActivity, display NFC tag ID in UI
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         TextView textView = (TextView) findViewById(R.id.scanTextView);
-                        textView.setText(intent.getStringExtra(ONFINISH));
+                        textView.setText(intent.getStringExtra(KEYS.ONFINISHINTENTFILTER));
                     }
-                }, new IntentFilter(ONFINISH)
+                }, new IntentFilter(KEYS.ONFINISHINTENTFILTER)
         );
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        scanning = true;
+        //always reset the boolean to true when this view gets opened
+        SCANNINGACTIVITY = true;
         Log.d(LOGTAG, "Setting registering to true");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        scanning = false;
+        //always reset the boolean to false when this view gets closed
+        SCANNINGACTIVITY = false;
         Log.d(LOGTAG, "Setting registering to false, onStop");
     }
 }

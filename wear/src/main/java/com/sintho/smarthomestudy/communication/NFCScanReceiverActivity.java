@@ -11,18 +11,15 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v4.content.LocalBroadcastManager;
 
-import com.sintho.smarthomestudy.Scanning;
+import com.sintho.smarthomestudy.KEYS;
+import com.sintho.smarthomestudy.ScanningActivity;
 import com.sintho.smarthomestudy.db.DBContract;
 import com.sintho.smarthomestudy.db.DBHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ReceiverActivity extends Activity {
-    public static final String IDSTRING = "id";
-    public static final String DATESTRING = "date";
-    public static final String NFCIDSTRING = "nfcid";
-
+public class NFCScanReceiverActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -30,29 +27,30 @@ public class ReceiverActivity extends Activity {
 
         Intent startingIntent = getIntent();
         Tag tag = startingIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        String tagUID = bytesToHex(tag.getId());
-        // noinspection ConstantConditions
         if (tag != null) {
+            String tagUID = bytesToHex(tag.getId());
             //Vibrate subtly to indicate tag scanned
-            //noinspection ConstantConditions
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(100);
 
-            if (Scanning.scanning) {
-                Intent forwardingIntent = new Intent(this, TransmitService.class);
-                forwardingIntent.putExtra(TransmitService.SCANTAG, true);
+            //check if scanning is enabled. If yes, we don't need to send the data to the smartphone for logging, only for a notification.
+            if (ScanningActivity.SCANNINGACTIVITY) {
+                Intent forwardingIntent = new Intent(this, PhoneCommunicationTransmitService.class);
+                //forward tag to smartphone, but declare it as non-logging
+                forwardingIntent.putExtra(KEYS.SCANTAGNOLOG, true);
                 JSONObject json = new JSONObject();
                 try {
-                    json.put(NFCIDSTRING, tagUID);
+                    json.put(KEYS.NFCIDSTRING, tagUID);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
+                forwardingIntent.putExtra(KEYS.JSONBYTEARRAY, json.toString().getBytes());
                 startService(forwardingIntent);
-                //Notify activity that registering is complete
-                Intent broadcastIntent = new Intent(Scanning.ONFINISH);
-                broadcastIntent.putExtra(Scanning.ONFINISH, tagUID);
+                //Notify activity that scanning is complete, to display the UID
+                Intent broadcastIntent = new Intent(KEYS.ONFINISHINTENTFILTER);
+                broadcastIntent.putExtra(KEYS.ONFINISHINTENTFILTER, tagUID);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
             } else {
+                //save NFC tag and date in db
                 DBHelper mDbHelper = new DBHelper(getApplicationContext());
                 SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -79,25 +77,25 @@ public class ReceiverActivity extends Activity {
                         null,                   // don't filter by row groups
                         sortOrder               // The sort order
                 );
-
+                //retrieve the newly added values to get the correct timestamp
                 JSONObject json = new JSONObject();
                 try {
-                    json.put(IDSTRING, newRowId);
+                    json.put(KEYS.IDSTRING, newRowId);
 
                     while(cursor.moveToNext()) {
                         String date = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_DATE));
-                        json.put(DATESTRING, date);
+                        json.put(KEYS.DATESTRING, date);
                         String id = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NFCID));
-                        json.put(NFCIDSTRING, id);
+                        json.put(KEYS.NFCIDSTRING, id);
                     }
                     cursor.close();
                     db.close();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-                Intent forwardingIntent = new Intent(this, TransmitService.class);
-                forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
+                //send data to smartphone
+                Intent forwardingIntent = new Intent(this, PhoneCommunicationTransmitService.class);
+                forwardingIntent.putExtra(KEYS.JSONBYTEARRAY, json.toString().getBytes());
                 startService(forwardingIntent);
             }
         }

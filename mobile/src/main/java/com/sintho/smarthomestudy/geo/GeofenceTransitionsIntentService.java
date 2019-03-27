@@ -19,6 +19,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        //service that gets called when the geofence triggers.
         Log.d(LOGTAG, "onHandleIntent");
         Intent i = intent.getParcelableExtra("geoIntent");
 

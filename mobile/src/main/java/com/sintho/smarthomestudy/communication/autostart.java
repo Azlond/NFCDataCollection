@@ -24,6 +24,7 @@ public class autostart extends BroadcastReceiver {
         PendingIntent alarmIntent = PendingIntent.getService(context, REQUESTCODE, i, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
+            //uploading the database every 12 hours
             alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime(),
                     AlarmManager.INTERVAL_HALF_DAY, alarmIntent);
@@ -41,6 +42,7 @@ public class autostart extends BroadcastReceiver {
             cal.set(Calendar.MONTH, cur_cal.get(Calendar.MONTH));
 
             Intent notifyIntent = new Intent(context, ReminderReceiver.class);
+            //sending a notification every evening at 22h to ask for daily feedback.
             PendingIntent pendingIntent = PendingIntent.getBroadcast
                     (context, 1017, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,  cal.getTimeInMillis(),

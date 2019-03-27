@@ -10,28 +10,25 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
+import com.sintho.smarthomestudy.KEYS;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TransmitService extends IntentService {
-    private static final String LOGTAG = TransmitService.class.getName();
-    private static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
-    private static final String RECEIVED = "RECEIVED";
-    public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
-    public static final String TASK = "TASK";
-    public static final String CONFIRMATION = "CONFIRMATION";
-    public static final String SYNC = "SYNC";
-    public TransmitService()
+public class WatchCommunicationTransmitService extends IntentService {
+    private static final String LOGTAG = WatchCommunicationTransmitService.class.getName();
+    private static final String WAKELOCK = WatchCommunicationTransmitService.class.getName() + ".NfcRelayingWakelock";
+    public WatchCommunicationTransmitService()
     {
-        super("TransmitService");
+        super("WatchCommunicationTransmitService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.d(LOGTAG, "onHandleIntent TransmitService");
-        if (intent.hasExtra(TASK)) {
+        Log.d(LOGTAG, "onHandleIntent WatchCommunicationTransmitService");
+        if (intent.hasExtra(KEYS.TASK)) {
+            //need to send message to watch, using wakelock to ensure computation power
             @SuppressWarnings("ConstantConditions") PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
             sendWakelock.acquire(60 * 1000L /*1 minute*/);
             GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
@@ -39,17 +36,20 @@ public class TransmitService extends IntentService {
             String connectedNode = getConnectedNodeID(googleApiClient);
             if (connectedNode == null) {
                 Log.d(LOGTAG, "Watch not connected");
+                sendWakelock.release();
                 return;
             }
             try {
-                if (intent.getStringExtra(TASK).equals(CONFIRMATION)) {
-                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, RECEIVED, intent.getByteArrayExtra(JSONBYTEARRAY)).await();
+                if (intent.getStringExtra(KEYS.TASK).equals(KEYS.CONFIRMATION)) {
+                    //confirming to watch that a db entry has been received by returning the same ID with a confirmation message
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, KEYS.RECEIVED, intent.getByteArrayExtra(KEYS.JSONBYTEARRAY)).await();
                     if (!result.getStatus().isSuccess()) {
                         Log.d(LOGTAG, "Could not transmit NFC confirmation: " + result.getStatus().getStatusMessage());
                     }
                     Log.d(LOGTAG, "Sent");
-                } else if (intent.getStringExtra(TASK).equals(SYNC)) {
-                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, SYNC, new byte[]{}).await();
+                } else if (intent.getStringExtra(KEYS.TASK).equals(KEYS.SYNC)) {
+                    //sending a sync request to retrieve all as of yet unsynced items
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(googleApiClient, connectedNode, KEYS.SYNC, new byte[]{}).await();
                     if (!result.getStatus().isSuccess()) {
                         Log.d(LOGTAG, "Could not transmit sync request: " + result.getStatus().getStatusMessage());
                     }
@@ -76,7 +76,7 @@ public class TransmitService extends IntentService {
 
         //Sort to grab nearby node first
         Collections.sort(connectedNodes, NodeNearbyComparator.INSTANCE);
-        Log.d(TransmitService.class.getName(), "Number of connected Nodes: " + connectedNodes.size());
+        Log.d(WatchCommunicationTransmitService.class.getName(), "Number of connected Nodes: " + connectedNodes.size());
 
         return connectedNodes.get(0).getId();
     }

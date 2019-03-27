@@ -12,10 +12,6 @@
             android:title="@string/nav_register" />
         <item android:id="@+id/nav_uxsampling"
             android:title="@string/ux_sampling" />
-        <!--<item-->
-        <!--android:id="@+id/nav_feedback"-->
-        <!--android:icon="@drawable/ic_action_check"-->
-        <!--android:title="@string/nav_feedback" />-->
         <item android:id="@+id/nav_settings"
             android:title="@string/nav_settings" />
         <item

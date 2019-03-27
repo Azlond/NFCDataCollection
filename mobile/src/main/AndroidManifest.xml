@@ -23,12 +23,12 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
-        <service android:name="com.sintho.smarthomestudy.communication.ReceiverService">
+        <service android:name="com.sintho.smarthomestudy.communication.WatchCommunicationReceiverService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
         </service>
-        <service android:name="com.sintho.smarthomestudy.communication.TransmitService" />
+        <service android:name="com.sintho.smarthomestudy.communication.WatchCommunicationTransmitService" />
 
         <activity
             android:name="com.sintho.smarthomestudy.Navigation"

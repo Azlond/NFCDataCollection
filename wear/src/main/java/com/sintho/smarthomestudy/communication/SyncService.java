@@ -6,11 +6,10 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.BatteryManager;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.sintho.smarthomestudy.MainActivity;
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.db.DBContract;
 import com.sintho.smarthomestudy.db.DBHelper;
 
@@ -20,24 +19,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sintho.smarthomestudy.communication.ReceiverActivity.DATESTRING;
-import static com.sintho.smarthomestudy.communication.ReceiverActivity.IDSTRING;
-import static com.sintho.smarthomestudy.communication.ReceiverActivity.NFCIDSTRING;
+public class SyncService extends IntentService {
+    private static final String LOGTAG = SyncService.class.getName();
 
-public class Sync extends IntentService {
-    private static final String LOGTAG = Sync.class.getName();
-
-    public Sync(String name) {
+    public SyncService(String name) {
         super(name);
     }
-    public Sync() {
-        super("Sync");
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+    public SyncService() {
+        super("SyncService");
     }
 
     @Override
@@ -48,6 +37,7 @@ public class Sync extends IntentService {
         // Define a projection that specifies which columns from the database
         // you will actually use after this query.
 
+        //get all unsynced entries from the DB
         String sortOrder =
                 DBContract.DBEntry._ID + " DESC";
         Cursor cursor = db.query(
@@ -75,18 +65,19 @@ public class Sync extends IntentService {
         }
         cursor.close();
         db.close();
+        //send a message for each unsynced item to the smartphone
         for (int i = 0; i < itemIds.size(); i++) {
             JSONObject json = new JSONObject();
             try {
-                json.put(IDSTRING, itemIds.get(i));
-                json.put(DATESTRING, dates.get(i));
-                json.put(NFCIDSTRING, nfcIds.get(i));
+                json.put(KEYS.IDSTRING, itemIds.get(i));
+                json.put(KEYS.DATESTRING, dates.get(i));
+                json.put(KEYS.NFCIDSTRING, nfcIds.get(i));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            Intent forwardingIntent = new Intent(this, TransmitService.class);
-            forwardingIntent.putExtra(TransmitService.JSONBYTEARRAY, json.toString().getBytes());
+            Intent forwardingIntent = new Intent(this, PhoneCommunicationTransmitService.class);
+            forwardingIntent.putExtra(KEYS.JSONBYTEARRAY, json.toString().getBytes());
             startService(forwardingIntent);
             Log.d(LOGTAG, "Sent synced item");
         }
@@ -94,22 +85,23 @@ public class Sync extends IntentService {
     }
 
     /**
-     * check battery life and notify phone if it's too low
+     * check battery life and notify phone if it's too low (lower than 50%)
      */
     private void checkBatteryLife() {
         BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
         int batteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
         Log.d(LOGTAG, String.format("Battery level: %d", batteryLevel));
-        SharedPreferences prefs = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE);
-        boolean batteryNotificationSent = prefs.getBoolean(MainActivity.BATTERYNOTIFICATION, false);
+        SharedPreferences prefs = getSharedPreferences(KEYS.SHAREDPREFERENCESKEY, MODE_PRIVATE);
+        boolean batteryNotificationSent = prefs.getBoolean(KEYS.BATTERYNOTIFICATION, false);
+        //only send a single notification
         if (batteryLevel < 50 && !batteryNotificationSent) {
-            Intent forwardingIntent = new Intent(this, TransmitService.class);
-            forwardingIntent.putExtra(MainActivity.BATTERYNOTIFICATION, true);
+            Intent forwardingIntent = new Intent(this, PhoneCommunicationTransmitService.class);
+            forwardingIntent.putExtra(KEYS.BATTERYNOTIFICATION, true);
             startService(forwardingIntent);
         } else if (batteryLevel > 50 && batteryNotificationSent) {
-            //reset notification
-            SharedPreferences.Editor editor = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE).edit();
-            editor.putBoolean(MainActivity.BATTERYNOTIFICATION, false);
+            //reset notification if one has been sent and the battery is above 50% again
+            SharedPreferences.Editor editor = getSharedPreferences(KEYS.SHAREDPREFERENCESKEY, MODE_PRIVATE).edit();
+            editor.putBoolean(KEYS.BATTERYNOTIFICATION, false);
             editor.apply();
         }
     }

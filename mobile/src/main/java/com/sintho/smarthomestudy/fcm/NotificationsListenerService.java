@@ -7,12 +7,13 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.Navigation;
 import com.sintho.smarthomestudy.Notifications;
 
 public class NotificationsListenerService extends GcmListenerService {
-    public static final String FEEDBACKFRAGMENT = "feedback_fragment";
     private static final String LOGTAG = NotificationsListenerService.class.getName();
+    //receives messages from Firebase cloud messaging, and displays them in a notification.
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String title = data.getString("title");
@@ -20,7 +21,7 @@ public class NotificationsListenerService extends GcmListenerService {
 
         Intent intent = new Intent(this, Navigation.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(FEEDBACKFRAGMENT, true);
+        intent.putExtra(KEYS.FEEDBACKFRAGMENT, true);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notifications.sendNotification(this, title, message, pendingIntent, Notification.PRIORITY_DEFAULT);

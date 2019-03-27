@@ -1,9 +1,5 @@
 package com.sintho.smarthomestudy;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,7 +7,6 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -28,29 +23,26 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
+import com.sintho.smarthomestudy.communication.WatchCommunicationTransmitService;
 import com.sintho.smarthomestudy.fcm.NotificationsListenerService;
 import com.sintho.smarthomestudy.fcm.RegistrationService;
-import com.sintho.smarthomestudy.communication.TransmitService;
 import com.sintho.smarthomestudy.fragments.Frag_Contact;
 import com.sintho.smarthomestudy.fragments.Frag_NFCLog;
 import com.sintho.smarthomestudy.fragments.Frag_NFCRegister;
 import com.sintho.smarthomestudy.fragments.Frag_Settings;
 import com.sintho.smarthomestudy.fragments.Frag_UXSampling;
-import com.sintho.smarthomestudy.reminders.ReminderReceiver;
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
+/**
+ * Main entry point of the app
+ */
 public class Navigation extends AppCompatActivity implements NodeApi.NodeListener {
-    //TODO: replace icons in drawer
     private static final String LOGTAG = Navigation.class.getName();
     /**
      * Navigation tab names
      */
     private static final String TAG_LOG = "log";
     private static final String TAG_REGISTER = "register";
-    private static final String TAG_FEEDBACK = "feedback";
     private static final String TAG_CONTACT = "contact";
     private static final String TAG_SETTINGS = "settings";
     private static final String TAG_UXSAMPLING = "uxsampling";
@@ -59,25 +51,21 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
     private static int navItemIndex = 0;
     private static String CURRENT_TAG = TAG_LOG;
 
+    //UI stuff
     private Handler mHandler;
     private DrawerLayout drawer;
     private NavigationView navigationView;
     private Toolbar toolbar;
+    private CheckBox wearableConnected;
 
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
-    private BroadcastReceiver receiver;
-
-    private CheckBox wearableConnected;
 
     private GoogleApiClient mGoogleApiClient;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Intent i = new Intent(this, RegistrationService.class);
-        startService(i);
 
         setContentView(R.layout.activity_navigation);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -97,25 +85,19 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
         // initializing navigation menu
         setUpNavigationView();
 
-        if (savedInstanceState == null && !getIntent().hasExtra(NotificationsListenerService.FEEDBACKFRAGMENT)) {
+        if (savedInstanceState == null && !getIntent().hasExtra(KEYS.FEEDBACKFRAGMENT)) {
             navItemIndex = 0;
             CURRENT_TAG = TAG_LOG;
             loadHomeFragment();
         }
 
-        if (getIntent().hasExtra(NotificationsListenerService.FEEDBACKFRAGMENT)) {
-            navItemIndex = 3;
-            CURRENT_TAG = TAG_FEEDBACK;
-            loadHomeFragment();
-        }
-
-        //add functionality for sync button
+        //add functionality for sync button, which sends a sync request to the smartwatch
         Button syncButton = (Button) findViewById(R.id.syncButton);
         syncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent syncIntent = new Intent(getApplicationContext(), TransmitService.class);
-                syncIntent.putExtra(TransmitService.TASK, TransmitService.SYNC);
+                Intent syncIntent = new Intent(getApplicationContext(), WatchCommunicationTransmitService.class);
+                syncIntent.putExtra(KEYS.TASK, KEYS.SYNC);
                 startService(syncIntent);
             }
         });
@@ -124,29 +106,13 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
         mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
         Wearable.NodeApi.addListener(mGoogleApiClient, this);
 
+        //intent to start registration service, which connects to google cloud messaging
+        Intent i = new Intent(this, RegistrationService.class);
+        startService(i);
+
+        //starting the autostart class, in order to start the bi-daily upload as well as the daily notification reminder
         Intent i1 = new Intent("com.sintho.smarthomestudy.SYNC_SERVICE");
         sendBroadcast(i1);
-
-        //create reminders for Feedback
-        Calendar cur_cal = new GregorianCalendar();
-        cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
-
-        Calendar cal = new GregorianCalendar();
-        cal.add(Calendar.DAY_OF_YEAR, cur_cal.get(Calendar.DAY_OF_YEAR));
-        cal.set(Calendar.HOUR_OF_DAY, 22);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.set(Calendar.DATE, cur_cal.get(Calendar.DATE));
-        cal.set(Calendar.MONTH, cur_cal.get(Calendar.MONTH));
-
-        Intent notifyIntent = new Intent(this, ReminderReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast
-                (getApplicationContext(), 1017, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,  cal.getTimeInMillis(),
-                1000 * 60 * 60 * 24, pendingIntent);
-        Log.d(LOGTAG, "Daily notification registered");
     }
 
     @Override
@@ -160,6 +126,7 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        //display whether a connection to the smartwatch exists
                         if (connectedNodes == null || connectedNodes.isEmpty()) {
                             wearableConnected.setChecked(false);
                         } else {
@@ -174,12 +141,6 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //remove registered listener, we no longer need updates if the fragment is not visible
-        if (receiver != null) {
-            Log.d(LOGTAG, "unregistering broadcast-receiver");
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-            receiver = null;
-        }
     }
 
     @Override
@@ -256,8 +217,6 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                 return new Frag_Settings();
             case 4:
                 return new Frag_Contact();
-//            case 5:
-//                return new Frag_Feedback();
             default:
                 return new Frag_NFCLog();
         }
@@ -303,10 +262,6 @@ public class Navigation extends AppCompatActivity implements NodeApi.NodeListene
                         navItemIndex = 4;
                         CURRENT_TAG = TAG_CONTACT;
                         break;
-//                    case R.id.nav_feedback:
-//                        navItemIndex = 3;
-//                        CURRENT_TAG = TAG_FEEDBACK;
-//                        break;
                     default:
                         navItemIndex = 0;
                 }

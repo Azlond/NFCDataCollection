@@ -11,48 +11,49 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
-import com.sintho.smarthomestudy.MainActivity;
+import com.sintho.smarthomestudy.KEYS;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TransmitService extends IntentService {
-    private static final String LOGTAG = TransmitService.class.getName();
-    private static final String WAKELOCK = TransmitService.class.getName() + ".NfcRelayingWakelock";
-    private static final String TAGFOUND = "FOUND_TAG";
+public class PhoneCommunicationTransmitService extends IntentService {
+    private static final String LOGTAG = PhoneCommunicationTransmitService.class.getName();
+    private static final String WAKELOCK = PhoneCommunicationTransmitService.class.getName() + ".NfcRelayingWakelock";
 
-    public static final String SCANTAG = "SCANTAG";
-    public static final String JSONBYTEARRAY = "JSONBYTEARRAY";
-
-    public TransmitService()
+    public PhoneCommunicationTransmitService()
     {
-        super("TransmitService");
+        super("PhoneCommunicationTransmitService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        @SuppressWarnings("ConstantConditions") PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);
+        PowerManager.WakeLock sendWakelock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK);//set wakelock to ensure sending without problems
         sendWakelock.acquire(1000*60);
         try {
-            if (intent.hasExtra(SCANTAG)) {
-                Log.d(LOGTAG, SCANTAG);
+            if (intent.hasExtra(KEYS.SCANTAGNOLOG)) {
+                //the results of the scan should not get logged, only be displayed as notification on the phone.
+                Log.d(LOGTAG, KEYS.SCANTAGNOLOG);
 
-                if (sendMessage(intent.getByteArrayExtra(JSONBYTEARRAY), SCANTAG)) {
-                    Log.d(LOGTAG, "Sent SCANTAG message");
+                if (sendMessage(intent.getByteArrayExtra(KEYS.JSONBYTEARRAY), KEYS.SCANTAGNOLOG)) {
+                    Log.d(LOGTAG, "Sent SCANTAGNOLOG message");
                 }
-            } else if (intent.hasExtra(MainActivity.BATTERYNOTIFICATION)) {
-                if (sendMessage(new byte[]{}, MainActivity.BATTERYNOTIFICATION)) {
-                    SharedPreferences.Editor editor = getSharedPreferences(MainActivity.SHAREDPREFERENCESKEY, MODE_PRIVATE).edit();
-                    editor.putBoolean(MainActivity.BATTERYNOTIFICATION, true);
+            } else if (intent.hasExtra(KEYS.BATTERYNOTIFICATION)) {
+                //battery is low, should display notification on phone
+                if (sendMessage(new byte[]{}, KEYS.BATTERYNOTIFICATION)) {
+                    //setting a pref to true to ensure only one notification gets displayed, to not annoy the user.
+                    SharedPreferences.Editor editor = getSharedPreferences(KEYS.SHAREDPREFERENCESKEY, MODE_PRIVATE).edit();
+                    editor.putBoolean(KEYS.BATTERYNOTIFICATION, true);
                     editor.apply();
                 }
             } else {
-                if (sendMessage(intent.getByteArrayExtra(JSONBYTEARRAY), TAGFOUND)) {
-                    Log.d(LOGTAG, "Sent REGISTER message");
+                //basic message informing the phone of a new scanned tag.
+                if (sendMessage(intent.getByteArrayExtra(KEYS.JSONBYTEARRAY), KEYS.TAGFOUND)) {
+                    Log.d(LOGTAG, "Sent Tagfound message");
                 }
             }
         } finally {
+            //releasing wakelock to avoid battery drain after the message has been sent.
             sendWakelock.release();
         }
     }
@@ -83,7 +84,7 @@ public class TransmitService extends IntentService {
 
         //Sort to grab nearby node first
         Collections.sort(connectedNodes, NodeNearbyComparator.INSTANCE);
-        Log.d(TransmitService.class.getName(), "Number of connected Nodes: " + connectedNodes.size());
+        Log.d(PhoneCommunicationTransmitService.class.getName(), "Number of connected Nodes: " + connectedNodes.size());
 
         return connectedNodes.get(0).getId();
     }

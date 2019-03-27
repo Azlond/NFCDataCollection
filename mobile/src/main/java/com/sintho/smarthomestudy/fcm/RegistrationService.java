@@ -18,7 +18,7 @@ public class RegistrationService extends IntentService {
     public RegistrationService() {
         super("RegistrationService");
     }
-
+    //registers the device with Firebase cloud messaging.
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         InstanceID instanceID = InstanceID.getInstance(this);

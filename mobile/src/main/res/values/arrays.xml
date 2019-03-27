@@ -3,7 +3,6 @@
     <array name="nav_names">
         <item>Log</item>
         <item>Register</item>
-        <!--<item>Feedback</item>-->
         <item>Feedback</item>
         <item>Settings</item>
         <item>Contact</item>

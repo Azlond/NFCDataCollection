@@ -10,6 +10,7 @@ import android.net.NetworkInfo;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.fragments.Frag_Settings;
 
 import java.io.DataOutputStream;
@@ -21,6 +22,7 @@ import java.net.URL;
 
 public class DBSyncService extends IntentService {
 
+    //TODO: replace server URL with destination server
     String upLoadServerUri = "http://nfcsync.sintho.com/html/upload.php";
     private final String LOGTAG = DBSyncService.class.getName();
 
@@ -33,6 +35,7 @@ public class DBSyncService extends IntentService {
         ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
+        //only upload if we're connected to WIFI
         if (activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
             Log.d(LOGTAG, "WIFI connected");
             final String LOGDB = getApplicationContext().getDatabasePath(DBHelper.DATABASE_NAME).getAbsolutePath();
@@ -87,9 +90,10 @@ public class DBSyncService extends IntentService {
                 dos = new DataOutputStream(conn.getOutputStream());
 
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
-                SharedPreferences prefs = getApplication().getSharedPreferences(Frag_Settings.PARTICIPANTIDSHARED, MODE_PRIVATE);
-                String token =  prefs.getString(Frag_Settings.PARTICIPANTIDKEY, "-1");
+                SharedPreferences prefs = getApplication().getSharedPreferences(KEYS.PARTICIPANTIDSHARED, MODE_PRIVATE);
+                String token =  prefs.getString(KEYS.PARTICIPANTIDKEY, "-1");
                 if (token.equals("-1")) {
+                    //cancel upload if no participant ID is available
                     Log.d(LOGTAG, "No participant ID");
                     return 0;
                 }

@@ -16,7 +16,7 @@
         android:theme="@android:style/Theme.DeviceDefault"
         tools:ignore="GoogleAppIndexingWarning">
         <meta-data android:name="com.google.android.wearable.standalone" android:value="false"/>
-        <activity android:name="com.sintho.smarthomestudy.communication.ReceiverActivity">
+        <activity android:name="com.sintho.smarthomestudy.communication.NFCScanReceiverActivity">
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
@@ -30,8 +30,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.sintho.smarthomestudy.communication.TransmitService" />
-        <service android:name="com.sintho.smarthomestudy.communication.ReceiverService">
+        <service android:name="com.sintho.smarthomestudy.communication.PhoneCommunicationTransmitService" />
+        <service android:name="com.sintho.smarthomestudy.communication.PhoneCommunicationReceiverService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
@@ -56,11 +56,11 @@
         </receiver>
 
         <service
-            android:name="com.sintho.smarthomestudy.communication.Sync"
+            android:name="com.sintho.smarthomestudy.communication.SyncService"
             android:enabled="true"
             android:exported="false"/>
 
-        <activity android:name="com.sintho.smarthomestudy.Scanning" />
+        <activity android:name="com.sintho.smarthomestudy.ScanningActivity" />
     </application>
 
 </manifest>

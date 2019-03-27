@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.Notifications;
 import com.sintho.smarthomestudy.R;
 import com.sintho.smarthomestudy.db.DBContract;
@@ -20,31 +21,22 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
-public class ReceiverService extends WearableListenerService {
-    private static final String LOGTAG = ReceiverService.class.getName();
-    public static final String NFCTAGCAST = ReceiverService.class.getName() + "NFCBroadcast";
-    public static final String FRAGREGISTER = "FRAGMENTREGISTER";
-
-    //for communication with watch
-    private static final String IDSTRING = "id";
-    private static final String DATESTRING = "date";
-    private static final String NFCIDSTRING = "nfcid";
-    private static final String TAGFOUND = "FOUND_TAG";
-    private static final String SCANTAG = "SCANTAG";
-    private static final String BATTERYNOTIFICATION = "BatteryNotification";
+public class WatchCommunicationReceiverService extends WearableListenerService {
+    private static final String LOGTAG = WatchCommunicationReceiverService.class.getName();
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         Log.d(LOGTAG, "message received " + messageEvent);
 
-        if (messageEvent.getPath().equals(TAGFOUND)) {
-            Log.d(LOGTAG, "message event: " + TAGFOUND);
+        if (messageEvent.getPath().equals(KEYS.TAGFOUND)) {
+            //normal NFC scan event
+            Log.d(LOGTAG, "message event: " + KEYS.TAGFOUND);
 
             //get byte data from message
             byte[] jsonBytes = messageEvent.getData();
-            Integer id = (Integer) getValueFromJSON(jsonBytes, IDSTRING);
-            String date = (String) getValueFromJSON(jsonBytes, DATESTRING);
-            String nfcID = (String) getValueFromJSON(jsonBytes, NFCIDSTRING);
+            Integer id = (Integer) getValueFromJSON(jsonBytes, KEYS.IDSTRING);
+            String date = (String) getValueFromJSON(jsonBytes, KEYS.DATESTRING);
+            String nfcID = (String) getValueFromJSON(jsonBytes, KEYS.NFCIDSTRING);
             if (id == null || date == null || nfcID == null) {
                 try {
                     throw new Exception("Invalid id value -1");
@@ -53,7 +45,7 @@ public class ReceiverService extends WearableListenerService {
                 }
             }
             Log.d(LOGTAG, String.format("gotTag: %s; with date %s; entry # %d", nfcID, date, id));
-
+            //save data to db
             DBHelper mDbHelper = new DBHelper(getApplicationContext());
             SQLiteDatabase db = mDbHelper.getWritableDatabase();
             SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
@@ -76,6 +68,7 @@ public class ReceiverService extends WearableListenerService {
 
                     Cursor cursor2 = getNameCursorFromDB(nfcID);
 
+                    //if the tag ID has received a name, use it. Otherwise, use an empty string
                     if (cursor2.getCount() > 0) {
                         cursor2.moveToFirst();
                         String name = cursor2.getString(cursor2.getColumnIndexOrThrow(DBContract.DBEntry.COLUMN_NAME));
@@ -97,8 +90,9 @@ public class ReceiverService extends WearableListenerService {
                         }
                     }
                     Log.d(LOGTAG, "Successfully added new entry to log database");
-                    Log.d(LOGTAG, String.format("Broadcasting %s to update NFC-Log fragment UI", NFCTAGCAST));
-                    Intent broadcastIntent = new Intent(NFCTAGCAST);
+                    Log.d(LOGTAG, String.format("Broadcasting %s to update NFC-Log fragment UI", KEYS.NFCTAGCAST));
+                    //Update UI with the new entry.
+                    Intent broadcastIntent = new Intent(KEYS.NFCTAGCAST);
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
                 }
             } finally {
@@ -110,20 +104,21 @@ public class ReceiverService extends WearableListenerService {
              * confirm to watch that row #id has been received
              */
             Log.d(LOGTAG, "sending confirmation message");
-            Intent watchIntent = new Intent(ReceiverService.this, TransmitService.class);
-            watchIntent.putExtra(TransmitService.TASK, TransmitService.CONFIRMATION);
+            Intent watchIntent = new Intent(WatchCommunicationReceiverService.this, WatchCommunicationTransmitService.class);
+            watchIntent.putExtra(KEYS.TASK, KEYS.CONFIRMATION);
             JSONObject jsonObject = new JSONObject();
             try {
-                jsonObject.put(IDSTRING, id);
+                jsonObject.put(KEYS.IDSTRING, id);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            watchIntent.putExtra(TransmitService.JSONBYTEARRAY, jsonObject.toString().getBytes());
+            watchIntent.putExtra(KEYS.JSONBYTEARRAY, jsonObject.toString().getBytes());
             startService(watchIntent);
             Log.d(LOGTAG, "Confirmation message sent");
-        } else if (messageEvent.getPath().equals(SCANTAG)) {
+        } else if (messageEvent.getPath().equals(KEYS.SCANTAG)) {
+            //retrieving tag id event. We need to display a notification with the current name. If none has been given, empty string.
             byte[] jsonBytes = messageEvent.getData();
-            String nfcID = (String) getValueFromJSON(jsonBytes, NFCIDSTRING);
+            String nfcID = (String) getValueFromJSON(jsonBytes, KEYS.NFCIDSTRING);
             Log.d(LOGTAG, String.format("gotTag: %s", nfcID));
 
             Cursor cursor = getNameCursorFromDB(nfcID);
@@ -136,7 +131,8 @@ public class ReceiverService extends WearableListenerService {
 //            Intent intent = new Intent(getApplicationContext(), Navigation.class);
 //            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), (getString(R.string.notification_tagID).replace("replacement1", nfcID).replace("replacement2", name)), null, Notification.PRIORITY_HIGH);
-        } else if (messageEvent.getPath().equals(BATTERYNOTIFICATION)) {
+        } else if (messageEvent.getPath().equals(KEYS.BATTERYNOTIFICATION)) {
+            //Battery of the smartwatch has dropped below 50%. Notify the user with a notification.
             Notifications.sendNotification(getApplicationContext(), getString(R.string.app_name), getString(R.string.notification_battery), null, Notification.PRIORITY_HIGH);
         }
     }
@@ -206,7 +202,8 @@ public class ReceiverService extends WearableListenerService {
             }
         }
         db.close();
-        Intent broadcastIntent = new Intent(FRAGREGISTER);
+        //Update the UI with the newly added ID
+        Intent broadcastIntent = new Intent(KEYS.FRAGREGISTER);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
     }
 }

@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.db.DBContract;
 import com.sintho.smarthomestudy.db.DBHelper;
 
@@ -15,20 +16,15 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
-import static com.sintho.smarthomestudy.communication.ReceiverActivity.IDSTRING;
-
-public class ReceiverService extends WearableListenerService {
-    private static final String LOGTAG = ReceiverService.class.getName();
-
-    //for communication with phone
-    private static final String RECEIVED = "RECEIVED";
-    private static final String SYNC = "SYNC";
+public class PhoneCommunicationReceiverService extends WearableListenerService {
+    private static final String LOGTAG = PhoneCommunicationReceiverService.class.getName();
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         Log.d(LOGTAG, "message received " + messageEvent);
 
-        if (messageEvent.getPath().equals(RECEIVED)) {
+        if (messageEvent.getPath().equals(KEYS.RECEIVED)) {
+            //message handshake to confirm that the phone has received the data
             //get byte data from message
             byte[] jsonBytes = messageEvent.getData();
             int id = -1;
@@ -38,7 +34,7 @@ public class ReceiverService extends WearableListenerService {
                 //parse string to json
                 JSONObject json = new JSONObject(decoded);
                 //get values from json
-                id = (Integer) json.get(IDSTRING);
+                id = (Integer) json.get(KEYS.IDSTRING);
             } catch (UnsupportedEncodingException | JSONException e) {
                 e.printStackTrace();
             }
@@ -52,12 +48,14 @@ public class ReceiverService extends WearableListenerService {
             DBHelper mdbHelper = new DBHelper(this);
             SQLiteDatabase db = mdbHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
+            //setting the db entry in column synced to 1 to mark it as completely synced.
             values.put(DBContract.DBEntry.COLUMN_SYNCED, 1);
             db.update(DBContract.DBEntry.TABLE_NAME, values, DBContract.DBEntry._ID+ " = ?", new String[]{String.valueOf(id)});
             db.close();
-        } else if (messageEvent.getPath().equals(SYNC)) {
+        } else if (messageEvent.getPath().equals(KEYS.SYNC)) {
+            //user requests a data sync from the phone
             Log.d(LOGTAG, "Received SYNC request");
-            Intent i = new Intent(getApplicationContext(), Sync.class);
+            Intent i = new Intent(getApplicationContext(), SyncService.class);
             startService(i);
         }
     }

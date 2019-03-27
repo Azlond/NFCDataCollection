@@ -32,9 +32,10 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.MaxHeightScrollView;
 import com.sintho.smarthomestudy.R;
-import com.sintho.smarthomestudy.communication.ReceiverService;
+import com.sintho.smarthomestudy.communication.WatchCommunicationReceiverService;
 import com.sintho.smarthomestudy.db.DBContract;
 import com.sintho.smarthomestudy.db.DBHelper;
 
@@ -46,11 +47,12 @@ import java.util.List;
  */
 public class Frag_NFCRegister extends Fragment {
     private static final String LOGTAG = Frag_NFCRegister.class.getName();
+
+    //receiver to get updates when a new tag has been scanned, for instant display.
     private BroadcastReceiver receiver;
 
     private ArrayList<EditText> editTextArrayList;
     private ArrayList<TextView> textViewArrayList;
-    private Button saveButton;
     public Frag_NFCRegister() {
         // Required empty public constructor
     }
@@ -83,7 +85,7 @@ public class Frag_NFCRegister extends Fragment {
         //register receiver
         Log.d(LOGTAG, "registering broadcast-receiver");
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(
-                receiver, new IntentFilter(ReceiverService.FRAGREGISTER)
+                receiver, new IntentFilter(KEYS.FRAGREGISTER)
         );
     }
 
@@ -98,6 +100,9 @@ public class Frag_NFCRegister extends Fragment {
         }
     }
 
+    /**
+     * Save name changes to db, update nfc log db with new names
+     */
     private void buttonOnClick() {
         DBHelper mDbRegisterHelper = new DBHelper(getContext());
         SQLiteDatabase registerDB = mDbRegisterHelper.getWritableDatabase();
@@ -127,10 +132,9 @@ public class Frag_NFCRegister extends Fragment {
         editTextArrayList = new ArrayList<>();
         textViewArrayList = new ArrayList<>();
         RelativeLayout relativeLayout= (RelativeLayout) inflater.inflate(R.layout.fragment_frag__nfcregister, container, false);
-        saveButton = (Button) relativeLayout.findViewById(R.id.registerSaveButton);
+        Button saveButton = (Button) relativeLayout.findViewById(R.id.registerSaveButton);
         FrameLayout frameLayout = (FrameLayout) relativeLayout.findViewById(R.id.frameRegisterLayout);
         relativeLayout.removeAllViews();
-//        frameLayout.removeAllViews();
         TableLayout tableLayout = fillRegister();
         MaxHeightScrollView scrollView = new MaxHeightScrollView(getContext());
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -147,7 +151,6 @@ public class Frag_NFCRegister extends Fragment {
                 buttonOnClick();
             }
         });
-//        frameLayout.addView(saveButton);
         relativeLayout.addView(frameLayout);
         relativeLayout.addView(saveButton);
         return relativeLayout;
@@ -232,35 +235,6 @@ public class Frag_NFCRegister extends Fragment {
         return  textView;
     }
 
-    /*private Button createSaveButton(boolean enabled, int width, final TextView nfcID, final EditText name) {
-        Button button = new Button(getContext());
-        button.setText(R.string.save);
-        button.setEnabled(enabled);
-        button.setMaxWidth(width);
-        button.setWidth(width);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(LOGTAG, String.format("Clicked id %s with new name %s", nfcID.getText(), name.getText()));
-                //update id->name database
-                DBHelper mDbRegisterHelper = new DBHelper(getContext());
-                SQLiteDatabase registerDB = mDbRegisterHelper.getWritableDatabase();
-                ContentValues values = new ContentValues();
-                values.put(DBContract.DBEntry.COLUMN_NAME, String.valueOf(name.getText()));
-                registerDB.update(DBContract.DBEntry.TABLE_NAMEREGISTER, values, DBContract.DBEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
-                registerDB.close();
-                DBHelper mdbHelper = new DBHelper(getContext());
-                SQLiteDatabase logDB = mdbHelper.getWritableDatabase();
-                ContentValues nameValue = new ContentValues();
-                nameValue.put(DBContract.DBEntry.COLUMN_NAME, String.valueOf(name.getText()));
-                logDB.update(DBContract.DBEntry.TABLE_NAMENFCLOG, nameValue, DBContract.DBEntry.COLUMN_NFCID + " = ?", new String[]{String.valueOf(nfcID.getText())});
-                logDB.close();
-                Toast.makeText(getActivity(), R.string.savedNewName, Toast.LENGTH_LONG).show();
-            }
-        });
-        return button;
-    }*/
-
     private TableLayout fillRegister() {
         //calculate display width
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -321,7 +295,6 @@ public class Frag_NFCRegister extends Fragment {
 
                 EditText nfcName = createTableRowEditText(names.get(i), width / 2 - 2);
                 tr.addView(nfcName);
-//                tr.addView(createSaveButton(true, width / 5, nfcID, nfcName));
                 tl.addView(tr);
             }
         } else {
@@ -330,7 +303,6 @@ public class Frag_NFCRegister extends Fragment {
 
             tr.addView(createTableRowView(getString(R.string.tableValueMissingID), width / 2 - 2, 2));
             tr.addView(createTableRowView(getString(R.string.tableValueMissingName), width / 2 - 25, 25));
-//            tr.addView(createSaveButton(false, width / 5, null, null));
 
             tl.addView(tr);
         }

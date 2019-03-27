@@ -9,12 +9,13 @@ import android.os.SystemClock;
 import android.util.Log;
 
 public class autostart extends BroadcastReceiver {
-    private static final int REQUESTCODE = 1337;
+    private static final int REQUESTCODE = 1337; //random request code, not used anywhere else
     private static final String LOGTAG = autostart.class.getName();
 
     public void onReceive(Context context, Intent intent) {
         Log.d(LOGTAG, "starting alarm");
-        Intent i = new Intent(context, Sync.class);
+        Intent i = new Intent(context, SyncService.class);
+        //create alarm that triggers every hour to sync data from the smartwatch to the smartphone
         PendingIntent alarmIntent = PendingIntent.getService(context, REQUESTCODE, i, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {

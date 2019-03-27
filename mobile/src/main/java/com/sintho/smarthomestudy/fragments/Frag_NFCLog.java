@@ -25,8 +25,9 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.R;
-import com.sintho.smarthomestudy.communication.ReceiverService;
+import com.sintho.smarthomestudy.communication.WatchCommunicationReceiverService;
 import com.sintho.smarthomestudy.db.DBContract;
 import com.sintho.smarthomestudy.db.DBHelper;
 
@@ -37,6 +38,7 @@ import java.util.List;
  * Fragment that displays the logged nfc-events
  */
 public class Frag_NFCLog extends Fragment {
+    //receiver to get updates when a new tag has been scanned, for instant display.
     private BroadcastReceiver receiver;
     private static final String LOGTAG = Frag_NFCLog.class.getName();
 
@@ -64,7 +66,7 @@ public class Frag_NFCLog extends Fragment {
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //noinspection ConstantConditions
+                //reset layout, rebuild it.
                 FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frameLogLayout);
                 if (frameLayout == null) {
                     throw new NullPointerException("Layout does not exist");
@@ -80,7 +82,7 @@ public class Frag_NFCLog extends Fragment {
         //register receiver
         Log.d(LOGTAG, "registering broadcast-receiver");
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
-                receiver, new IntentFilter(ReceiverService.NFCTAGCAST)
+                receiver, new IntentFilter(KEYS.NFCTAGCAST)
         );
     }
 

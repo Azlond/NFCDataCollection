@@ -8,6 +8,7 @@ import android.support.v4.app.NotificationCompat;
 
 public class Notifications {
 
+    //sending a local notification
     public static void sendNotification(Context context, String title, String message, PendingIntent pendingIntent, int priority) {
         NotificationManager notificationManager= (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)

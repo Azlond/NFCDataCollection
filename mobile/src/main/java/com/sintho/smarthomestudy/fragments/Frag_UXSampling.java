@@ -66,7 +66,7 @@ public class Frag_UXSampling extends Fragment {
         final int mMonth = mcurrentDate.get(Calendar.MONTH);
         final int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
         dateView = (TextView) v.findViewById(R.id.dateTextView);
-
+        //clickable date, where the participant can select for which date they would like to give feedback.
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,6 +100,10 @@ public class Frag_UXSampling extends Fragment {
         return v;
     }
 
+    /**
+     * creating the layout
+     * @param v
+     */
     private void createLayout(View v) {
         FrameLayout frameLayout = (FrameLayout) v.findViewById(R.id.UXSamplingFrameLayout);
         TableLayout tableLayout = fillUXSampling();

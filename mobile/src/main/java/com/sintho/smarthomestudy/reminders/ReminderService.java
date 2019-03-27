@@ -18,6 +18,7 @@ public class ReminderService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        //service started by the receiver to send a notification
         Notifications.sendNotification(getApplicationContext(), "NFC Study", getString(R.string.feedback_reminder), null, Notification.PRIORITY_MAX);
     }
 }

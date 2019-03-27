@@ -35,6 +35,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.sintho.smarthomestudy.KEYS;
 import com.sintho.smarthomestudy.Notifications;
 import com.sintho.smarthomestudy.R;
 import com.sintho.smarthomestudy.geo.GeoReceiver;
@@ -51,8 +52,6 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
     private static final String LOGTAG = Frag_Settings.class.getName();
     private static final String LOCATIONCHECKBOX = "LOCATIONCHECKBOX";
     private static final String LOCATIONCHECKBOXTICKED = "LOCATIONCHECKBOXTICKED";
-    public static final String PARTICIPANTIDSHARED = "PARTICIPANTIDSHARED";
-    public static final String PARTICIPANTIDKEY = "PARTICIPANTIDKEY";
     private static final String REQUESTID = "1337";
     private static final int RADIUS = 100;
     private static final String LATITUDE = "LATITUDE";
@@ -69,6 +68,8 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_frag__settings, container, false);
+
+        //display button and checkbox for location services
         locationButton = (Button) v.findViewById(R.id.locationButton);
 
         locationCheckBox = (CheckBox) v.findViewById(R.id.locationCheckbox);
@@ -93,6 +94,7 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
                     if (longitude.equals(200.0) || latitude.equals(200.0)) {
                         Notifications.sendNotification(getContext(), getString(R.string.app_name), getString(R.string.notification_missingLocation), null, Notification.PRIORITY_MAX);
                     } else {
+                        //remove old geofence and create new one at saved location
                         removeGeofence();
                         Location location = new Location("");
                         location.setLatitude(latitude);
@@ -121,9 +123,10 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
             locationCheckBox.setEnabled(false);
         }
 
+        //text field where the participant ID needs to be entered
         final EditText participantIDEditText = (EditText) v.findViewById(R.id.participantIDEditText);
-        SharedPreferences prefs2 = getContext().getSharedPreferences(Frag_Settings.PARTICIPANTIDSHARED, MODE_PRIVATE);
-        String token = prefs2.getString(Frag_Settings.PARTICIPANTIDKEY, "-1");
+        SharedPreferences prefs2 = getContext().getSharedPreferences(KEYS.PARTICIPANTIDSHARED, MODE_PRIVATE);
+        String token = prefs2.getString(KEYS.PARTICIPANTIDKEY, "-1");
         if (!token.equals(("-1"))) {
             participantIDEditText.setText(token);
         }
@@ -170,8 +173,9 @@ public class Frag_Settings extends Fragment implements LocationListener, GoogleA
 
             @Override
             public void afterTextChanged(Editable editable) {
-                SharedPreferences.Editor editor = getActivity().getSharedPreferences(PARTICIPANTIDSHARED, MODE_PRIVATE).edit();
-                editor.putString(PARTICIPANTIDKEY, String.valueOf(participantIDEditText.getText()));
+                //automatically save participant ID after changes
+                SharedPreferences.Editor editor = getActivity().getSharedPreferences(KEYS.PARTICIPANTIDSHARED, MODE_PRIVATE).edit();
+                editor.putString(KEYS.PARTICIPANTIDKEY, String.valueOf(participantIDEditText.getText()));
                 editor.apply();
             }
         });
