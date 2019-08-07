@@ -23,7 +23,8 @@ import java.net.URL;
 public class DBSyncService extends IntentService {
 
     //TODO: replace server URL with destination server
-    String upLoadServerUri = "http://nfcsync.sintho.com/html/upload.php";
+    String upLoadServerUri = ""; //TODO: ----------place Server-URL here------------
+
     private final String LOGTAG = DBSyncService.class.getName();
 
     public DBSyncService() {
@@ -32,6 +33,11 @@ public class DBSyncService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+
+        if (upLoadServerUri.length() == 0) {
+            throw new IllegalStateException("No Upload-URL found. Please place your server-URL in DBSyncService.java");
+        }
+
         ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
